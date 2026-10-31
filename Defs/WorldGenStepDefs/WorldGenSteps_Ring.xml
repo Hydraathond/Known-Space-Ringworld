@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- Ring only (listed in RW_Ring's worldGenSteps). After Terrain (0), before Lakes (150) and Rivers (200), so every later step sees the wall foot. -->
+  <WorldGenStepDef>
+    <defName>RW_WallFoot</defName>
+    <order>100</order>
+    <worldGenStep Class="Ringworld.WorldGenStep_WallFoot"/>
+  </WorldGenStepDef>
+
+  <!-- Ring only. Right after RW_WallFoot, which makes the wall foot it picks spill mountains from. -->
+  <WorldGenStepDef>
+    <defName>RW_SpillMountains</defName>
+    <order>110</order>
+    <worldGenStep Class="Ringworld.WorldGenStep_SpillMountains"/>
+  </WorldGenStepDef>
+
+</Defs>

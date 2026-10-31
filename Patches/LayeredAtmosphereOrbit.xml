@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+
+  <!--
+    Layered Atmosphere and Orbit (LAO) is a soft dependency (ADR 0003): this only applies when LAO is loaded, so LAO's
+    class name below is never resolved without it.
+    The ring gets the extension LAO gives vanilla's Surface: elevation 0, LAO's Surface group, replace-connections on.
+    Without it LAO's code finds no planet for the ring: starting a ring game crashes in LAO's Map.FinalizeInit postfix,
+    the ring is hidden in the orbit view, and LAO's connection checks and site finder fail.
+    LaoIntegration checks at startup that the extension arrived.
+  -->
+  <Operation Class="PatchOperationFindMod">
+    <mods>
+      <li>Layered Atmosphere and Orbit</li>
+    </mods>
+    <match Class="PatchOperationAdd">
+      <xpath>Defs/PlanetLayerDef[defName="RW_Ring"]/modExtensions</xpath>
+      <value>
+        <li Class="LayeredAtmosphereOrbit.LayeredAtmosphereOrbitDefModExtension">
+          <isReplaceConnections>true</isReplaceConnections>
+          <elevation>0</elevation>
+          <planetLayerGroup>LAO_Surface</planetLayerGroup>
+        </li>
+      </value>
+    </match>
+  </Operation>
+
+  <!--
+    Where a new ring world puts LAO's two orbit layers (the orbit stack): Odyssey's orbit, which LAO makes its Orbit, at
+    0.7 x the ring radius with an orbit band 15 degrees either side of the ring plane, and LAO's High Orbit at 0.5 x with
+    an orbit band of 45 degrees. High Orbit's camera settings are made for its radius of 175. Only read for a new ring
+    world while the LAO integration works (RingOrbit.ExtensionForNewLayer); LAO's settings defs are left alone, so
+    planet worlds keep LAO's radii.
+    LAO's own patch gives Orbit its modExtensions list first. If either list is missing (LAO changed), nothing is added
+    and LaoIntegration's startup check logs the one warning.
+  -->
+  <Operation Class="PatchOperationFindMod">
+    <mods>
+      <li>Layered Atmosphere and Orbit</li>
+    </mods>
+    <match Class="PatchOperationSequence">
+      <operations>
+        <li Class="PatchOperationConditional">
+          <xpath>Defs/PlanetLayerDef[defName="Orbit"]/modExtensions</xpath>
+          <match Class="PatchOperationAdd">
+            <xpath>Defs/PlanetLayerDef[defName="Orbit"]/modExtensions</xpath>
+            <value>
+              <li Class="Ringworld.RingOrbitExtension">
+                <radiusFactor>0.7</radiusFactor>
+                <bandHalfAngle>15</bandHalfAngle>
+              </li>
+            </value>
+          </match>
+        </li>
+        <li Class="PatchOperationConditional">
+          <xpath>Defs/PlanetLayerDef[defName="LAO_HighOrbit"]/modExtensions</xpath>
+          <match Class="PatchOperationAdd">
+            <xpath>Defs/PlanetLayerDef[defName="LAO_HighOrbit"]/modExtensions</xpath>
+            <value>
+              <li Class="Ringworld.RingOrbitExtension">
+                <radiusFactor>0.5</radiusFactor>
+                <bandHalfAngle>45</bandHalfAngle>
+                <baselineRadius>175</baselineRadius>
+              </li>
+            </value>
+          </match>
+        </li>
+      </operations>
+    </match>
+  </Operation>
+
+  <!--
+    Where a ring world puts LAO's atmosphere layers, which it builds as rings (ADR 0005, RingAtmosphere): each a fixed
+    fraction of the rim wall's height above the inner surface, in LAO's order and evenly spaced, all below the rim-wall
+    tops. The same whichever layers exist, so ticking or unticking one never moves another. This is the one place the
+    heights are set; the self-check (RingSelfCheck_Atmosphere) pins them. Planet worlds never read it, so they keep
+    LAO's spheres. If a def or its list is missing (LAO changed), nothing is added and LaoIntegration's startup check
+    logs the one warning.
+  -->
+  <Operation Class="PatchOperationFindMod">
+    <mods>
+      <li>Layered Atmosphere and Orbit</li>
+    </mods>
+    <match Class="PatchOperationSequence">
+      <operations>
+        <li Class="PatchOperationConditional">
+          <xpath>Defs/PlanetLayerDef[defName="LAO_Troposphere"]/modExtensions</xpath>
+          <match Class="PatchOperationAdd">
+            <xpath>Defs/PlanetLayerDef[defName="LAO_Troposphere"]/modExtensions</xpath>
+            <value>
+              <li Class="Ringworld.RingAtmosphereExtension">
+                <heightFraction>0.25</heightFraction>
+              </li>
+            </value>
+          </match>
+        </li>
+        <li Class="PatchOperationConditional">
+          <xpath>Defs/PlanetLayerDef[defName="LAO_Stratosphere"]/modExtensions</xpath>
+          <match Class="PatchOperationAdd">
+            <xpath>Defs/PlanetLayerDef[defName="LAO_Stratosphere"]/modExtensions</xpath>
+            <value>
+              <li Class="Ringworld.RingAtmosphereExtension">
+                <heightFraction>0.5</heightFraction>
+              </li>
+            </value>
+          </match>
+        </li>
+        <li Class="PatchOperationConditional">
+          <xpath>Defs/PlanetLayerDef[defName="LAO_Mesosphere"]/modExtensions</xpath>
+          <match Class="PatchOperationAdd">
+            <xpath>Defs/PlanetLayerDef[defName="LAO_Mesosphere"]/modExtensions</xpath>
+            <value>
+              <li Class="Ringworld.RingAtmosphereExtension">
+                <heightFraction>0.75</heightFraction>
+              </li>
+            </value>
+          </match>
+        </li>
+      </operations>
+    </match>
+  </Operation>
+
+</Patch>

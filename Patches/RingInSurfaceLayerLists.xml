@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+
+  <!--
+    Every list of planet layers that names vanilla's Surface also names the ring's def, so what's allowed or barred on a
+    planet's surface is allowed or barred on the ring the same way. Without it, on a ring: raids and visitors never drop
+    in by pod (the pod arrival modes and the Empire's and other factions' arrival whitelists), sieges and Anomaly's
+    psychic rituals never happen, mortars can't be manned, the give-up-and-leave mental break never fires, and Odyssey's
+    site quests that whitelist Surface never find a site. The lists are named layerWhitelist, layerBlacklist,
+    arrivalLayerWhitelist, planetLayerWhitelist, layerDefs and so on, in defs and in quest scripts alike; every element
+    whose name has "Layer" or starts with "layer" counts. Planet worlds have no ring layer, so the extra entry changes
+    nothing there. Lists other mods add after this patch, or from code, aren't covered.
+  -->
+  <Operation Class="PatchOperationAdd">
+    <success>Always</success>
+    <xpath>Defs//*[(contains(name(), 'Layer') or starts-with(name(), 'layer')) and li = 'Surface' and not(li = 'RW_Ring')]</xpath>
+    <value>
+      <li>RW_Ring</li>
+    </value>
+  </Operation>
+
+</Patch>

@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!--
+    Ring copies of the vanilla world shaders that texture by the direction from the planet centre
+    (Data/Core/Defs/ShaderDefs/Shaders.World.xml), with the same pipeline settings. Their fragment shaders map textures
+    onto the unrolled ring instead (Shaders/World/RW_RingUV.glsl). RingMaterials swaps them in on ring layers.
+  -->
+
+  <ShaderDef>
+    <defName>RW_RingTerrain</defName>
+    <shaderProgram>
+      <vertexShaderFileName>WorldTerrain.vert.glsl</vertexShaderFileName>
+      <fragmentShaderFileName>RW_RingTerrain.frag.glsl</fragmentShaderFileName>
+      <stencilEnabled>true</stencilEnabled>
+      <stencilCompare>Always</stencilCompare>
+      <stencilPassOp>Replace</stencilPassOp>
+      <stencilRef>3</stencilRef>
+      <stencilWriteMask>3</stencilWriteMask>
+      <textureWrapOverrides>
+        <li><key>_MainTex</key><value>Repeat</value></li>
+        <li><key>_SecondaryTex</key><value>Repeat</value></li>
+        <li><key>_MaskTex</key><value>Clamp</value></li>
+        <li><key>_MacroTex</key><value>Repeat</value></li>
+      </textureWrapOverrides>
+    </shaderProgram>
+  </ShaderDef>
+
+  <ShaderDef>
+    <defName>RW_RingIce</defName>
+    <shaderProgram>
+      <vertexShaderFileName>WorldTerrain.vert.glsl</vertexShaderFileName>
+      <fragmentShaderFileName>RW_RingTerrain.frag.glsl</fragmentShaderFileName>
+      <textureWrapOverrides>
+        <li><key>_MainTex</key><value>Repeat</value></li>
+        <li><key>_SecondaryTex</key><value>Repeat</value></li>
+        <li><key>_MaskTex</key><value>Clamp</value></li>
+        <li><key>_MacroTex</key><value>Repeat</value></li>
+      </textureWrapOverrides>
+    </shaderProgram>
+  </ShaderDef>
+
+  <ShaderDef>
+    <defName>RW_RingOcean</defName>
+    <shaderProgram>
+      <fragmentShaderFileName>RW_RingOcean.frag.glsl</fragmentShaderFileName>
+      <stencilEnabled>true</stencilEnabled>
+      <stencilCompare>Always</stencilCompare>
+      <stencilPassOp>Replace</stencilPassOp>
+      <stencilRef>1</stencilRef>
+      <stencilWriteMask>1</stencilWriteMask>
+      <textureWrapOverrides>
+        <li><key>_MainTex</key><value>Repeat</value></li>
+        <li><key>_MacroTex</key><value>Repeat</value></li>
+      </textureWrapOverrides>
+    </shaderProgram>
+  </ShaderDef>
+
+  <!--
+    The ring's sun (GlobalDrawLayer_RingSun): vanilla's sun glow, but drawn where it is (at the ring's centre) instead of
+    on the sky around the camera, so SceneDefault.vert.glsl instead of Skybox.vert.glsl. Depth-tested, so the ring can
+    pass in front of it; additive and writing no depth, so nothing transparent (the orbit layer) hides it.
+  -->
+  <ShaderDef>
+    <defName>RW_RingSun</defName>
+    <shaderProgram>
+      <fragmentShaderFileName>Sun.frag.glsl</fragmentShaderFileName>
+      <useTexture>false</useTexture>
+      <blendMode>Additive</blendMode>
+      <depthWrite>false</depthWrite>
+      <cullMode>None</cullMode>
+      <renderQueue>Transparent</renderQueue>
+    </shaderProgram>
+  </ShaderDef>
+
+  <ShaderDef>
+    <defName>RW_RingPollution</defName>
+    <shaderProgram>
+      <fragmentShaderFileName>RW_RingPollution.frag.glsl</fragmentShaderFileName>
+      <transparent>true</transparent>
+      <depthWrite>false</depthWrite>
+      <textureWrapOverrides>
+        <li><key>_MainTex</key><value>Repeat</value></li>
+      </textureWrapOverrides>
+    </shaderProgram>
+  </ShaderDef>
+
+  <!--
+    Ring copies of vanilla's other lit world shaders, with the same pipeline settings. They texture by mesh UVs (or not at
+    all), so they only add the night shadow (Shaders/World/RW_RingShadow.glsl). RingMaterials swaps them in on ring
+    worlds, like the four above.
+  -->
+
+  <ShaderDef>
+    <defName>RW_RingOverlayLit</defName>
+    <shaderProgram>
+      <fragmentShaderFileName>RW_RingOverlayLit.frag.glsl</fragmentShaderFileName>
+      <transparent>true</transparent>
+    </shaderProgram>
+  </ShaderDef>
+
+  <ShaderDef>
+    <defName>RW_RingRoads</defName>
+    <shaderProgram>
+      <fragmentShaderFileName>RW_RingRoads.frag.glsl</fragmentShaderFileName>
+      <useTexture>false</useTexture>
+      <transparent>true</transparent>
+      <depthWrite>false</depthWrite>
+      <stencilEnabled>true</stencilEnabled>
+      <stencilCompare>Equal</stencilCompare>
+      <stencilRef>1</stencilRef>
+      <stencilReadMask>1</stencilReadMask>
+    </shaderProgram>
+  </ShaderDef>
+
+  <ShaderDef>
+    <defName>RW_RingRivers</defName>
+    <shaderProgram>
+      <fragmentShaderFileName>RW_RingRivers.frag.glsl</fragmentShaderFileName>
+      <useTexture>false</useTexture>
+      <transparent>true</transparent>
+      <depthWrite>false</depthWrite>
+      <stencilEnabled>true</stencilEnabled>
+      <stencilCompare>Equal</stencilCompare>
+      <stencilRef>2</stencilRef>
+      <stencilReadMask>2</stencilReadMask>
+    </shaderProgram>
+  </ShaderDef>
+
+  <ShaderDef>
+    <defName>RW_RingUngeneratedPlanetParts</defName>
+    <shaderProgram>
+      <fragmentShaderFileName>RW_RingUngeneratedPlanetParts.frag.glsl</fragmentShaderFileName>
+      <useTexture>false</useTexture>
+    </shaderProgram>
+  </ShaderDef>
+
+  <!--
+    The ring's clouds (WorldDrawLayer_RingClouds): a copy of vanilla's Clouds shader with the same pipeline settings,
+    reading the night shadow instead of vanilla's sun. Drawn only by the cloud band, so RingMaterials doesn't switch to it.
+  -->
+  <ShaderDef>
+    <defName>RW_RingClouds</defName>
+    <shaderProgram>
+      <fragmentShaderFileName>RW_RingClouds.frag.glsl</fragmentShaderFileName>
+      <transparent>true</transparent>
+      <depthWrite>false</depthWrite>
+      <textureWrapOverrides>
+        <li><key>_SunsetColorRamp</key><value>Clamp</value></li>
+        <li><key>_NoiseTex</key><value>Repeat</value></li>
+        <li><key>_CloudTex</key><value>Repeat</value></li>
+      </textureWrapOverrides>
+    </shaderProgram>
+  </ShaderDef>
+
+  <!--
+    The ring structure shader (RingStructure): the ring's thickness and the shadow squares, textured. Vanilla's
+    WorldVertexColor pipeline settings, which drew them flat before, with WorldTerrain's vertex shader for its second UV
+    channel. Drawn only by those layers, so RingMaterials doesn't switch to it.
+  -->
+  <ShaderDef>
+    <defName>RW_RingStructure</defName>
+    <shaderProgram>
+      <vertexShaderFileName>WorldTerrain.vert.glsl</vertexShaderFileName>
+      <fragmentShaderFileName>RW_RingStructure.frag.glsl</fragmentShaderFileName>
+      <transparent>true</transparent>
+      <renderQueue>2000</renderQueue>
+      <textureWrapOverrides>
+        <li><key>_MainTex</key><value>Repeat</value></li>
+        <li><key>_MacroTex</key><value>Repeat</value></li>
+        <li><key>_NoiseTex</key><value>Repeat</value></li>
+      </textureWrapOverrides>
+    </shaderProgram>
+  </ShaderDef>
+
+</Defs>

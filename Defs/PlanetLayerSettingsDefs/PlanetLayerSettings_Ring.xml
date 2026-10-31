@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!--
+    The ring ignores radius and subdivisions: its radius is derived from the world's ring size
+    (tiles around x vanilla hex size 0.8 / 2pi), and its tiles come from the ring geometry.
+  -->
+  <PlanetLayerSettingsDef>
+    <defName>RW_Ring</defName>
+    <label>Ring</label>
+    <settings>
+      <useSurfaceViewAngle>true</useSurfaceViewAngle>
+    </settings>
+  </PlanetLayerSettingsDef>
+
+</Defs>

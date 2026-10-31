@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    RimWorld 1.7 runs on Ludeon's .NET 10 fork ("WaylithClr"), so the mod targets net10.0
+    and references the game's own DLLs straight from the install folder.
+    If RimWorld is installed elsewhere, build with:  dotnet build -p:RimWorldDir="D:\path\to\RimWorld"
+    If the workshop Harmony mod is elsewhere, also pass -p:HarmonyDir="D:\path\to\Harmony\1.7\Assemblies"
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Ringworld</AssemblyName>
+    <RootNamespace>Ringworld</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>..\..\Assemblies\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <DebugType>portable</DebugType>
+    <RimWorldDir Condition="'$(RimWorldDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\RimWorld</RimWorldDir>
+    <HarmonyDir Condition="'$(HarmonyDir)' == ''">$(RimWorldDir)\..\..\workshop\content\294100\2009463077\1.7\Assemblies</HarmonyDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(RimWorldDir)\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityStubs">
+      <HintPath>$(RimWorldDir)\UnityStubs.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- On 1.7 some UnityEngine rendering types (e.g. Material) are defined in Waylith.dll. -->
+    <Reference Include="Waylith">
+      <HintPath>$(RimWorldDir)\Waylith.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Harmony comes from the workshop Harmony mod (brrainz.harmony), which About.xml depends on.
+      Compile against its 1.7 copy so the API matches what runs in game, and never ship it.
+    -->
+    <Reference Include="0Harmony">
+      <HintPath>$(HarmonyDir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CheckHarmony" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(HarmonyDir)\0Harmony.dll')" Text="0Harmony.dll not found in '$(HarmonyDir)'. Subscribe to the workshop Harmony mod, or build with -p:HarmonyDir=&quot;path\to\Harmony\1.7\Assemblies&quot;." />
+  </Target>
+
+</Project>

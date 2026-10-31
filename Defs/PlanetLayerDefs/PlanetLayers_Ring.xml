@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!--
+    Based on the vanilla Surface def (Data/Core/Defs/PlanetLayerDefs/PlanetLayers.xml), with:
+    - layerType Ringworld.RingLayer: the ring geometry instead of the icosphere
+    - obstructsExpandingIcons false: the camera sits inside the layer's radius, so the vanilla sphere-occlusion test would hide every icon
+    - no Glow, Clouds or UngeneratedPlanetParts draw layers: they build their own spheres; no DebugNoise either
+      (RingStandIn draws the ungenerated-planet material on the ring instead, and RingClouds the clouds)
+    The world-gen steps are vanilla's plus RW_WallFoot and RW_SpillMountains. Before a ring layer is built, whatever other mods added to Surface is
+    copied onto this def, apart from the sphere-only draw layers above (SurfaceAdditions.cs).
+    The root surface layer becomes this def when Ring is picked on the Create World page.
+  -->
+  <PlanetLayerDef>
+    <defName>RW_Ring</defName>
+    <label>ring</label>
+    <viewGizmoTooltip>View locations on the ring.</viewGizmoTooltip>
+    <viewGizmoTexPath>UI/Commands/ViewPlanet</viewGizmoTexPath>
+    <layerType>Ringworld.RingLayer</layerType>
+    <tileType>SurfaceTile</tileType>
+    <elevationString>{0}m</elevationString>
+    <gerundLabel>on the</gerundLabel>
+    <backgroundBiome>Ocean</backgroundBiome>
+    <obstructsExpandingIcons>false</obstructsExpandingIcons>
+    <worldGenSteps>
+      <li>Terrain</li>
+      <li>RW_WallFoot</li>
+      <li>RW_SpillMountains</li>
+      <li>Lakes</li>
+      <li>Rivers</li>
+      <li>Mutators</li>
+      <li MayRequire="Ludeon.RimWorld.Odyssey">Landmarks</li>
+      <li>AncientSites</li>
+      <li>AncientRoads</li>
+      <li MayRequire="Ludeon.RimWorld.Biotech">Pollution</li>
+      <li>Factions</li>
+      <li>Roads</li>
+      <li>Features</li>
+    </worldGenSteps>
+    <worldDrawLayers>
+      <li>WorldDrawLayer_CurrentMapTile</li>
+      <li>WorldDrawLayer_SelectedTile</li>
+      <li>WorldDrawLayer_SettleTile</li>
+      <li>WorldDrawLayer_MouseTile</li>
+      <li>WorldDrawLayer_ClosestTile</li>
+      <li>WorldDrawLayer_WorldObjects_Expandable</li>
+      <li>WorldDrawLayer_WorldObjects_NonExpandable</li>
+      <li>WorldDrawLayer_Landmarks</li>
+      <li>WorldDrawLayer_Hills</li>
+      <li MayRequire="Ludeon.RimWorld.Biotech">WorldDrawLayer_Pollution</li>
+      <li>WorldDrawLayer_Rivers</li>
+      <li>WorldDrawLayer_Roads</li>
+      <li>WorldDrawLayer_Terrain</li>
+      <!-- The ring's outer face and rim-wall faces (visual only). -->
+      <li>Ringworld.WorldDrawLayer_RingThickness</li>
+      <!-- Below 100% land coverage, the ocean-look inner surface of the tile-less stand-in span (visual only). -->
+      <li>Ringworld.WorldDrawLayer_RingStandIn</li>
+      <!-- Clouds bent onto the ring just inside the inner surface, seen from orbit (visual only). -->
+      <li>Ringworld.WorldDrawLayer_RingClouds</li>
+    </worldDrawLayers>
+    <worldTabs>
+      <li>WITab_Terrain</li>
+      <li>WITab_Planet</li>
+    </worldTabs>
+    <modExtensions>
+      <li Class="Ringworld.RingworldExtension">
+        <!-- The ring size is per-world state saved with the world; the radius follows from it (tiles around x 0.8 / 2pi). -->
+        <!-- Set to true if the ring is invisible or can't be clicked: it reverses which side of the tiles faces the camera. -->
+        <flipWinding>false</flipWinding>
+        <!-- Camera distances from the inner surface, in world units (one hex is about 0.8). The ring is about 14 wide. -->
+        <cameraFieldOfView>50</cameraFieldOfView>
+        <cameraMinDistance>3</cameraMinDistance>
+        <cameraStartDistance>15</cameraStartDistance>
+        <cameraMaxDistance>40</cameraMaxDistance>
+        <!-- The furthest zoom, past which the orbit view opens, is this times the ground's furthest. The atmosphere layers (LAO) share the range between them. -->
+        <furthestZoomRatio>3.4</furthestZoomRatio>
+      </li>
+    </modExtensions>
+  </PlanetLayerDef>
+
+</Defs>

@@ -1,0 +1,4 @@
+# Build output: Assemblies/Ringworld.dll is the shipped build and is committed
+**/bin/
+**/obj/
+*.pdb

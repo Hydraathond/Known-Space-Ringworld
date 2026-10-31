@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- The sun at the ring's centre, in the orbit view of a ring world. Draws nothing on planet worlds. -->
+  <GlobalWorldDrawLayerDef>
+    <defName>RW_RingSun</defName>
+    <worldDrawLayer>Ringworld.GlobalDrawLayer_RingSun</worldDrawLayer>
+  </GlobalWorldDrawLayerDef>
+
+  <!-- The shadow squares orbiting between the sun and the ring, in the orbit view of a ring world. Draws nothing on planet worlds. -->
+  <GlobalWorldDrawLayerDef>
+    <defName>RW_RingShadowSquares</defName>
+    <worldDrawLayer>Ringworld.GlobalDrawLayer_RingShadowSquares</worldDrawLayer>
+  </GlobalWorldDrawLayerDef>
+
+</Defs>

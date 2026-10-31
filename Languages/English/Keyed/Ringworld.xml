@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+  <!-- Create World page -->
+  <RW_WorldShape>World shape</RW_WorldShape>
+  <RW_WorldShape_Ring>Ring</RW_WorldShape_Ring>
+  <RW_WorldShape_Planet>Planet</RW_WorldShape_Planet>
+  <RW_WorldShapeTip>Ring: a closed loop of land around a sun, seen from its centre. Planet: the vanilla globe.</RW_WorldShapeTip>
+  <RW_RingSizeWithLiveTiles>Ring size ({0} tiles)</RW_RingSizeWithLiveTiles>
+  <RW_RingSizeTip>Tiles around the whole ring × tiles from one rim to the other. Hexes are vanilla-sized, so the ring's size sets how big it looks. Only the land coverage's share of it has tiles; that tile count is shown here, and more tiles are slower to generate and play.</RW_RingSizeTip>
+  <RW_RingSizePreset_Small>Small</RW_RingSizePreset_Small>
+  <RW_RingSizePreset_Medium>Medium</RW_RingSizePreset_Medium>
+  <RW_RingSizePreset_Large>Large</RW_RingSizePreset_Large>
+  <RW_RingSizePreset_LoreAccurate>Lore-accurate ratio</RW_RingSizePreset_LoreAccurate>
+  <RW_RingSizePresetShort_Small>Small</RW_RingSizePresetShort_Small>
+  <RW_RingSizePresetShort_Medium>Medium</RW_RingSizePresetShort_Medium>
+  <RW_RingSizePresetShort_Large>Large</RW_RingSizePresetShort_Large>
+  <RW_RingSizePresetShort_LoreAccurate>Lore ratio</RW_RingSizePresetShort_LoreAccurate>
+  <RW_RingSizeCustomShort>Custom</RW_RingSizeCustomShort>
+  <RW_RingSizePresetWithSize>{0} ({1} × {2})</RW_RingSizePresetWithSize>
+  <RW_RingSizeAdvanced>Advanced…</RW_RingSizeAdvanced>
+  <RW_LandCoverage>Land coverage</RW_LandCoverage>
+  <RW_LandCoverageTip>How much of the ring's loop has tiles. Below 100%, all the land is on one stretch of the ring centred on 0°; the rest of the ring is still there but has no tiles. A big ring at low coverage looks huge for a playable tile count.</RW_LandCoverageTip>
+  <RW_ConfirmLargeRing>This ring has {0} tiles, more than {1} (about a vanilla planet at 100% coverage). Generating and playing it may be slow.\n\nGenerate it anyway?</RW_ConfirmLargeRing>
+
+  <!-- Worldbuilder's Create World page: its Coverage slider shows the ring's land coverage and live tile count. -->
+  <RW_RingSize>Ring size</RW_RingSize>
+  <RW_LandCoverageWithLiveTiles>{0} ({1} tiles)</RW_LandCoverageWithLiveTiles>
+  <RW_NoRingPreview>No preview for ring worlds</RW_NoRingPreview>
+
+  <!-- Shown once for a world generated without the Create World page's shape rows (e.g. dev quick test): the last choice. -->
+  <RW_LastChoiceWorld_Ring>This world is a Ring ({0}, {1} coverage), the last choice on the Create World page.</RW_LastChoiceWorld_Ring>
+  <RW_LastChoiceWorld_Planet>This world is a Planet, the last choice on the Create World page.</RW_LastChoiceWorld_Planet>
+  <RW_LastChoiceWorld_CustomSize>{0} × {1}</RW_LastChoiceWorld_CustomSize>
+
+  <!-- Advanced ring size dialog -->
+  <RW_RingSizeDialogTitle>Custom ring size</RW_RingSizeDialogTitle>
+  <RW_RingSizeTilesAround>Tiles around: {0}</RW_RingSizeTilesAround>
+  <RW_RingSizeTilesAcross>Tiles across: {0}</RW_RingSizeTilesAcross>
+  <RW_RingSizeTileCount>Tile count: {0} (at {1} land coverage)</RW_RingSizeTileCount>
+  <RW_RingSizeRadius>Ring radius: {0} ({1}× a vanilla planet's)</RW_RingSizeRadius>
+  <RW_RingSizeLargeWarning>Over {0} tiles (about a vanilla planet at 100% coverage): generation and play may be slow.</RW_RingSizeLargeWarning>
+
+  <!-- Ring coordinates: {0} is degrees around (0.00-180.00) or whole km across. Short forms show in the world inspect pane, spelled-out ones in messages. -->
+  <RW_RingCoordinates>{0}, {1}</RW_RingCoordinates>
+  <RW_RingAround_Spinward>{0}°S</RW_RingAround_Spinward>
+  <RW_RingAround_AntiSpinward>{0}°A</RW_RingAround_AntiSpinward>
+  <RW_RingAround_NoDirection>{0}°</RW_RingAround_NoDirection>
+  <RW_RingAcross_Port>{0}P</RW_RingAcross_Port>
+  <RW_RingAcross_Starboard>{0}Sb</RW_RingAcross_Starboard>
+  <RW_RingAcross_Midline>M</RW_RingAcross_Midline>
+  <RW_RingAround_Spinward_SpelledOut>{0}° spinward</RW_RingAround_Spinward_SpelledOut>
+  <RW_RingAround_AntiSpinward_SpelledOut>{0}° anti-spinward</RW_RingAround_AntiSpinward_SpelledOut>
+  <RW_RingAround_NoDirection_SpelledOut>{0}°</RW_RingAround_NoDirection_SpelledOut>
+  <RW_RingAcross_Port_SpelledOut>{0} km port</RW_RingAcross_Port_SpelledOut>
+  <RW_RingAcross_Starboard_SpelledOut>{0} km starboard</RW_RingAcross_Starboard_SpelledOut>
+  <RW_RingAcross_Midline_SpelledOut>on the midline</RW_RingAcross_Midline_SpelledOut>
+
+  <!-- The world inspect pane's title for a spill-mountain tile. -->
+  <RW_SpillMountain>Spill mountain</RW_SpillMountain>
+
+  <!-- The mod options page. -->
+  <RW_SettingsCategory>Ringworld</RW_SettingsCategory>
+  <RW_SettingSpillMountains>Spill mountains</RW_SettingSpillMountains>
+  <RW_SettingSpillMountainsTip>Place spill mountains along the wall foot of new ring worlds. Worlds already generated keep what they were made with.</RW_SettingSpillMountainsTip>
+  <RW_SettingCloudDensity>Cloud density: {0}%</RW_SettingCloudDensity>
+  <RW_SettingCloudDensityTip>How cloudy the ring looks from orbit, from 0% (no clouds) to 200%. Applies immediately in every save.</RW_SettingCloudDensityTip>
+
+</LanguageData>
