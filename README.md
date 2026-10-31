@@ -34,6 +34,11 @@ dotnet build -c Release
 This writes `Assemblies/Ringworld.dll`. If RimWorld or the Harmony workshop mod are installed somewhere else, pass
 `-p:RimWorldDir="..."` and `-p:HarmonyDir="..."` (see `Ringworld.csproj`).
 
+## AI Disclaimer
+
+Code was mostly written by AI.
+Any artwork and textures were made by a human.
+
 ## License
 
 [CC BY-NC-SA 4.0](LICENSE): you may share and adapt this mod, including patches and forks, as long as you give credit,
