@@ -2,15 +2,19 @@ using UnityEngine;
 
 namespace Ringworld;
 
-// A ring's size in tiles, chosen per world and saved with it. The radius always follows from it, so hexes stay vanilla-sized.
+// A ring's size in tiles, chosen per world and saved with it. The radius always follows from it at a vanilla planet's
+// hex size, VanillaHexSize.
 public readonly struct RingSize : System.IEquatable<RingSize>
 {
-	// Distance between neighbouring hex centres on a vanilla planet.
-	public const float VanillaHexSize = 0.8f;
+	// Distance between neighbouring hex centres on the ring, in world units: a vanilla planet's at 100% coverage
+	// (AverageTileSize, measured in game in v0.1.4 ticket 01), so vanilla's fixed world-unit sizes (texture density,
+	// clouds, the world arrow, altitude offsets) fit a ring hex as they fit a planet's.
+	public const float VanillaHexSize = 0.4958f;
 
-	// About a vanilla planet at 100% coverage. Rings with more live tiles get a warning and a confirmation before
-	// generating.
-	public const int LargeTileCount = 225000;
+	// The tile count of a vanilla planet at 100% coverage: subdivisions = 10, ten passes that each triple the
+	// triangles, then a final pass that turns every vertex into a tile. Measured in game as 590,492 surface tiles
+	// (v0.1.4 ticket 01). Rings with more live tiles get a warning and a confirmation before generating.
+	public const int LargeTileCount = 590492;
 
 	// The land coverages the Create World page offers, as vanilla's planet coverage row does.
 	public static readonly float[] LandCoverages = { 0.3f, 0.5f, 1f };
@@ -21,7 +25,8 @@ public readonly struct RingSize : System.IEquatable<RingSize>
 	// The lowest land coverage any page offers (Worldbuilder's Coverage slider).
 	public const float MinLandCoverage = 0.05f;
 
-	public static readonly RingSize Default = new RingSize(2000, 20);
+	// The Medium preset: a fresh install's last choice, and the size a save without one loads as.
+	public static readonly RingSize Default = new RingSize(4000, 40);
 
 	public readonly int tilesAround;
 
@@ -37,7 +42,12 @@ public readonly struct RingSize : System.IEquatable<RingSize>
 
 	public const int MinTilesAcross = 10;
 
-	public const int MaxTilesAcross = 100;
+	// A ring with fewer tiles around may stop short of it (MaxTilesAcrossAt).
+	public const int MaxTilesAcross = 200;
+
+	// The most tiles across the page offers at this many tiles around: MaxTilesAcross, or fewer where the ring view
+	// couldn't fit the ring's full width on screen (RingCamera.MaxTilesAcrossFitting).
+	public static int MaxTilesAcrossAt(int tilesAround) => RingCamera.MaxTilesAcrossFitting(RingworldExtension.OfSurfaceRing, tilesAround);
 
 	// Columns on the live arc at this land coverage: all of them at 100%, otherwise that share of the full loop.
 	public int LiveTilesAround(float landCoverage)
@@ -71,7 +81,8 @@ public readonly struct RingSize : System.IEquatable<RingSize>
 
 	public RingSize ClampToLimits()
 	{
-		return new RingSize(Mathf.Clamp(tilesAround, MinTilesAround, MaxTilesAround), Mathf.Clamp(tilesAcross, MinTilesAcross, MaxTilesAcross));
+		int around = Mathf.Clamp(tilesAround, MinTilesAround, MaxTilesAround);
+		return new RingSize(around, Mathf.Clamp(tilesAcross, MinTilesAcross, MaxTilesAcrossAt(around)));
 	}
 
 	// Follows from the full loop, whatever the land coverage, so coverage never changes how big the ring looks.

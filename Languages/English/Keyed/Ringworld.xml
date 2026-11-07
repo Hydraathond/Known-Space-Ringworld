@@ -41,19 +41,21 @@
   <RW_RingSizeRadius>Ring radius: {0} ({1}× a vanilla planet's)</RW_RingSizeRadius>
   <RW_RingSizeLargeWarning>Over {0} tiles (about a vanilla planet at 100% coverage): generation and play may be slow.</RW_RingSizeLargeWarning>
 
-  <!-- Ring coordinates: {0} is degrees around (0.00-180.00) or whole km across. Short forms show in the world inspect pane, spelled-out ones in messages. -->
+  <!-- Ring coordinates: {0} is degrees around (0.00-180.00) or parallels across (0.00-144.00, from the midline to each rim line). Short forms show in the world inspect pane, spelled-out ones in messages. The short across forms get {1} = the parallel symbol. -->
+  <!-- The parallel symbol. A language can swap it if its font can't draw ∥. -->
+  <RW_RingParallelSymbol>∥</RW_RingParallelSymbol>
   <RW_RingCoordinates>{0}, {1}</RW_RingCoordinates>
   <RW_RingAround_Spinward>{0}°S</RW_RingAround_Spinward>
   <RW_RingAround_AntiSpinward>{0}°A</RW_RingAround_AntiSpinward>
   <RW_RingAround_NoDirection>{0}°</RW_RingAround_NoDirection>
-  <RW_RingAcross_Port>{0}P</RW_RingAcross_Port>
-  <RW_RingAcross_Starboard>{0}Sb</RW_RingAcross_Starboard>
-  <RW_RingAcross_Midline>M</RW_RingAcross_Midline>
+  <RW_RingAcross_Sinister>{0}{1}Sn</RW_RingAcross_Sinister>
+  <RW_RingAcross_Dexter>{0}{1}Dx</RW_RingAcross_Dexter>
+  <RW_RingAcross_Midline>{1}0</RW_RingAcross_Midline>
   <RW_RingAround_Spinward_SpelledOut>{0}° spinward</RW_RingAround_Spinward_SpelledOut>
   <RW_RingAround_AntiSpinward_SpelledOut>{0}° anti-spinward</RW_RingAround_AntiSpinward_SpelledOut>
   <RW_RingAround_NoDirection_SpelledOut>{0}°</RW_RingAround_NoDirection_SpelledOut>
-  <RW_RingAcross_Port_SpelledOut>{0} km port</RW_RingAcross_Port_SpelledOut>
-  <RW_RingAcross_Starboard_SpelledOut>{0} km starboard</RW_RingAcross_Starboard_SpelledOut>
+  <RW_RingAcross_Sinister_SpelledOut>{0} parallels sinister</RW_RingAcross_Sinister_SpelledOut>
+  <RW_RingAcross_Dexter_SpelledOut>{0} parallels dexter</RW_RingAcross_Dexter_SpelledOut>
   <RW_RingAcross_Midline_SpelledOut>on the midline</RW_RingAcross_Midline_SpelledOut>
 
   <!-- The world inspect pane's title for a spill-mountain tile. -->
@@ -63,7 +65,13 @@
   <RW_SettingsCategory>Ringworld</RW_SettingsCategory>
   <RW_SettingSpillMountains>Spill mountains</RW_SettingSpillMountains>
   <RW_SettingSpillMountainsTip>Place spill mountains along the wall foot of new ring worlds. Worlds already generated keep what they were made with.</RW_SettingSpillMountainsTip>
+  <RW_SettingGhostIcons>Show ghost icons</RW_SettingGhostIcons>
+  <RW_SettingGhostIconsTip>Show faint icons of the places on the ring below in the orbit view and the atmosphere zoom bands. Applies immediately in every save.</RW_SettingGhostIconsTip>
   <RW_SettingCloudDensity>Cloud density: {0}%</RW_SettingCloudDensity>
   <RW_SettingCloudDensityTip>How cloudy the ring looks from orbit, from 0% (no clouds) to 200%. Applies immediately in every save.</RW_SettingCloudDensityTip>
+
+  <!-- Layered Atmosphere and Orbit's Layer tab, on ring worlds: the surface's description and the world's. LAO's planet text after its first paragraph (its gravity-well line) follows the world's. -->
+  <RW_LaoLayerTab_SurfaceDescription>The ring's inner surface: a vast band of rock, soil and sea laid over the engineered scrith floor of the ring, pressed down by its spin and held in by the towering rim walls on either side. Here oceans meet land and every biome lies spread along the loop, warmest along the midline and coldest against the rims, beneath a sun that never sets and is only hidden by the passing shadow squares.</RW_LaoLayerTab_SurfaceDescription>
+  <RW_LaoLayerTab_WorldDescription>A distant, sparsely populated ringworld at the edge of known space, built by an ancient civilization. A band of scrith spinning around its sun, so vast that its far side hangs in the sky as an arch. Lacking a central government or interstellar law, its inhabitants, many of them survivors of crashed starships, scrape out a living in a lawless, untamed landscape among the relics of builders far more advanced than they will ever be.</RW_LaoLayerTab_WorldDescription>
 
 </LanguageData>

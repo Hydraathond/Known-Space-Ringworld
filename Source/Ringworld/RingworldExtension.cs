@@ -8,6 +8,9 @@ public class RingworldExtension : DefModExtension
 {
 	public static readonly RingworldExtension Default = new RingworldExtension();
 
+	// The surface ring def's settings, or Default before defs are loaded (the mod's constructor reads the last ring size).
+	public static RingworldExtension OfSurfaceRing => SurfaceIdentity.RingDefIfLoaded?.GetModExtension<RingworldExtension>() ?? Default;
+
 	// Reverses the corner order of every tile. Use it if the ring turns out invisible or unclickable from the inside.
 	public bool flipWinding;
 

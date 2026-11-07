@@ -22,10 +22,14 @@ public static class Patch_WorldCameraDriver_Update
 		if (ring == null)
 		{
 			RingCamera.RestoreVanillaFieldOfView();
+			RingCamera.RestoreVanillaNearClip();
 			return true;
 		}
 		if (WorldRendererUtility.WorldBackgroundNow)
 		{
+			// Behind a map the camera gets vanilla's near clip back, since the ring view's would only cost depth
+			// precision there. The field of view isn't restored here, as it never has been.
+			RingCamera.RestoreVanillaNearClip();
 			return true;
 		}
 		if (!Find.WorldInterface.everReset)

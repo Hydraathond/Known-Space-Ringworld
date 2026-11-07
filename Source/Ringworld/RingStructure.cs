@@ -55,8 +55,8 @@ public readonly struct WangSquare
 }
 
 // The ring structure shader's textures and materials, one per surface, texture and whether the night shadow darkens it.
-// Each surface's textures are every PNG in its own folder under Textures/World/Ringworld/Structure/, so art can be
-// swapped or added without code. A folder is one of two kinds:
+// Each surface's textures are every PNG in its surface's folder (FolderOf) under Textures/World/Ringworld/Structure/, so
+// art can be swapped or added without code. Several surfaces can share a folder. A folder is one of two kinds:
 //   Variants: PNGs that tile, and match along their left and right edges. The meshes pick one per panel segment
 //     (VariantAt), and a segment shows it from edge to edge across the strip.
 //   A Wang set: exactly 16 PNGs, one per edge code, with the code anywhere in the file name as N[AB]-E[AB]-S[AB]-W[AB]
@@ -64,7 +64,7 @@ public readonly struct WangSquare
 //     side have identical pixels along it. The meshes cut each face into squares of about HexesPerRepeat hexes round the
 //     loop and across, each drawing one tile once, chosen so every edge shared by two squares has one type on both
 //     sides (EdgeIsB, WangTileAt). E is the tile's right side, the direction of u, round the loop; N is its top, the
-//     direction of v, across the strip (starboard on the outer face). A Wang surface has no macro blend (MacroBlendID), as
+//     direction of v, across the strip (dexter on the outer face). A Wang surface has no macro blend (MacroBlendID), as
 //     its tiles already vary.
 // A folder with no edge codes is variants. A folder where only some names carry a code, or the codes aren't one complete
 // set, logs a warning (WangProblemOf) and is drawn as variants too.
@@ -117,6 +117,24 @@ public static class RingStructure
 	public static readonly Texture2D NoiseTexture = ContentFinder<Texture2D>.Get("Other/Perlin");
 
 	private static readonly Dictionary<(RingStructureSurface, int, bool), Material> Materials = new Dictionary<(RingStructureSurface, int, bool), Material>();
+
+	// The surface's folder under TextureFolder. Hull, Rock and Scrith share the ring's art; the shadow squares' faces have
+	// their own. Giving a surface its own folder is one line here.
+	public static string FolderOf(RingStructureSurface surface)
+	{
+		switch (surface)
+		{
+			case RingStructureSurface.Hull:
+			case RingStructureSurface.Rock:
+			case RingStructureSurface.Scrith:
+				return "Ring";
+			default:
+				return surface.ToString();
+		}
+	}
+
+	// The surface's folder under Textures/, as ContentFinder takes it.
+	public static string FolderPathOf(RingStructureSurface surface) => TextureFolder + FolderOf(surface);
 
 	public static IReadOnlyList<Texture2D> TexturesOf(RingStructureSurface surface) => Textures[(int)surface];
 
@@ -254,10 +272,10 @@ public static class RingStructure
 
 	private static Texture2D[] LoadTextures(RingStructureSurface surface)
 	{
-		Texture2D[] textures = ContentFinder<Texture2D>.GetAllInFolder(TextureFolder + surface).OrderBy(texture => texture.name).ToArray();
+		Texture2D[] textures = ContentFinder<Texture2D>.GetAllInFolder(FolderPathOf(surface)).OrderBy(texture => texture.name).ToArray();
 		if (textures.Length == 0)
 		{
-			Log.Warning($"[Ringworld] No textures in Textures/{TextureFolder}{surface}; the ring's {surface} faces are drawn plain white.");
+			Log.Warning($"[Ringworld] No textures in Textures/{FolderPathOf(surface)}; the ring's {surface} faces are drawn plain white.");
 		}
 		return textures;
 	}
@@ -305,7 +323,7 @@ public static class RingStructure
 			return tiles;
 		}
 		WangProblems[(int)surface] = string.Join("; ", problems);
-		Log.Warning($"[Ringworld] Textures/{TextureFolder}{surface} has edge codes but isn't one complete Wang set of 16 ({WangProblems[(int)surface]}); its {surface} faces are drawn with its textures as variants.");
+		Log.Warning($"[Ringworld] Textures/{FolderPathOf(surface)} has edge codes but isn't one complete Wang set of 16 ({WangProblems[(int)surface]}); its {surface} faces are drawn with its textures as variants.");
 		return null;
 	}
 

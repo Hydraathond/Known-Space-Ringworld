@@ -18,8 +18,8 @@ namespace Ringworld;
 // the sun's side and matte near-black on the ring's, and scrith edges, all at the structure's scale: on a Wang set
 // (RingStructure) each face is cut into squares of about HexesPerRepeat hexes, else its texture repeats along it.
 // It is wide enough to cover most of its night zone seen from the sun, and as tall as the ring is wide, so it scales with the ring's width and its shadow reaches well past both rims.
-// The ring view never shows them, with no extra code: at RadiusFactor they are closer to the axis than the ring-view
-// camera can ever be, and that camera looks straight outward, so they are always behind it.
+// The ring view never shows them: they draw only in the orbit view (Visible). On small rings the ring view's furthest
+// zoom backs its camera past RadiusFactor, where they would be in front of it.
 public class GlobalDrawLayer_RingShadowSquares : WorldDrawLayerBase
 {
 	// Of the ring's radius: outside the sun's glow (GlobalDrawLayer_RingSun.GlowRadiusFactor), inside every orbit layer's
@@ -105,10 +105,15 @@ public class GlobalDrawLayer_RingShadowSquares : WorldDrawLayerBase
 		centres.Clear();
 		corners.Clear();
 		wangSquares.Clear();
-		if (SurfaceRing.Current is not { Geometry: RingGeometry geometry } ring)
+		if (SurfaceRing.Current is { Geometry: RingGeometry geometry } ring && !RingDrawLayerBuild.Run(this, () => Build(ring, geometry)))
 		{
 			yield break;
 		}
+		FinalizeMesh(MeshParts.All);
+	}
+
+	private void Build(RingLayer ring, RingGeometry geometry)
+	{
 		builtRadius = Radius(ring);
 		builtNightZones = geometry.nightZones;
 		float halfAngle = 0.5f * WidthShare * 2f * Mathf.PI / geometry.nightZones;
@@ -159,7 +164,6 @@ public class GlobalDrawLayer_RingShadowSquares : WorldDrawLayerBase
 			}
 			corners.Add(c);
 		}
-		FinalizeMesh(MeshParts.All);
 	}
 
 	// A face of a square on a Wang set: a row of squares from the first corner towards the second,

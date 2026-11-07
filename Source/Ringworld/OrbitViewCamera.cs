@@ -18,7 +18,7 @@ public static class OrbitViewCamera
 	public const float FieldOfView = 20f;
 
 	// WorldCameraManager's near clip plane.
-	private const float VanillaNearClipPlane = 2f;
+	public const float VanillaNearClipPlane = 2f;
 
 	// WorldCameraDriver's maximum altitude (private there).
 	public const float MaxAltitude = 1100f;
@@ -145,7 +145,11 @@ public static class OrbitViewCamera
 		}
 		else if (clipPlanesScaled)
 		{
-			camera.nearClipPlane = VanillaNearClipPlane;
+			// The ring view sets its own near clip before this runs (RingCamera.NearClipSet).
+			if (!RingCamera.NearClipSet)
+			{
+				camera.nearClipPlane = VanillaNearClipPlane;
+			}
 			camera.farClipPlane = WorldCameraManager.FarClipPlane;
 			clipPlanesScaled = false;
 		}

@@ -7,7 +7,7 @@ using Verse;
 namespace Ringworld;
 
 // World camera for ring-shaped layers (the ring view): it sits on the ring's axis and looks outward at the layer's inner surface.
-// State is one angle around the ring, an offset across the ring from the midline (positive towards starboard, the top of
+// State is one angle around the ring, an offset across the ring from the midline (positive towards dexter, the top of
 // the screen), and the distance to the surface ring (zoom).
 // The surface ring and its atmosphere layers share that one zoom, cut into consecutive zoom bands from the ground outward
 // (ZoomBands): crossing a band's edge selects that band's layer without moving the camera.
@@ -22,12 +22,22 @@ public static class RingCamera
 
 	private static float pendingAngle;
 
-	// How far the view is from the midline, in world units; positive is towards the top of the screen (starboard).
+	// How far the view is from the midline, in world units; positive is towards the top of the screen (dexter).
 	private static float across;
 
 	private static float pendingAcross;
 
 	private static float? vanillaFieldOfView;
+
+	// The ring view's near clip as a share of its nearest zoom (the def's cameraMinDistance): vanilla's 2 over the ring
+	// view's nearest zoom of 3 from when hexes were 0.8 apart, so the picture is that one scaled to vanilla-sized hexes.
+	// Vanilla's 2 would clip the ground at today's nearest zoom. It stays clear of the region labels' Lift there.
+	public const float NearClipShareOfNearestZoom = 2f / 3f;
+
+	private static bool nearClipSet;
+
+	// Whether the world camera has the ring view's near clip rather than vanilla's.
+	public static bool NearClipSet => nearClipSet;
 
 	// The layer the camera was last put in the band of; a different selected layer (a tab, a jump) moves the camera into its band.
 	private static RingLayer bandLayer;
@@ -283,6 +293,21 @@ public static class RingCamera
 		}
 	}
 
+	public static float NearClipPlane(RingworldExtension settings)
+	{
+		return settings.cameraMinDistance * NearClipShareOfNearestZoom;
+	}
+
+	// Puts vanilla's near clip back once the ring view has stopped driving the camera.
+	public static void RestoreVanillaNearClip()
+	{
+		if (nearClipSet && Find.WorldCamera != null)
+		{
+			Find.WorldCamera.nearClipPlane = OrbitViewCamera.VanillaNearClipPlane;
+			nearClipSet = false;
+		}
+	}
+
 	private static void Apply(WorldCameraDriver driver, RingLayer ring)
 	{
 		Camera camera = Find.WorldCamera;
@@ -292,6 +317,8 @@ public static class RingCamera
 			vanillaFieldOfView = camera.fieldOfView;
 		}
 		camera.fieldOfView = settings.cameraFieldOfView;
+		camera.nearClipPlane = NearClipPlane(settings);
+		nearClipSet = true;
 		Vector3 outward = RingGeometry.Outward(angle);
 		camera.transform.rotation = Quaternion.LookRotation(outward, Vector3.up);
 		camera.transform.position = ring.Origin + outward * (ring.Radius - ViewDistance(ring, distance)) + Vector3.up * across;
@@ -301,11 +328,11 @@ public static class RingCamera
 	}
 
 	// The share of the view's height that the area beyond a rim (rim wall and empty space) may take at most.
-	public const float MaxBeyondRimShare = 0.3f;
+	public const float MaxBeyondRimShare = 0.4f;
 
 	// The view's height, as a share of the ring's full width (rim walls included), over which the pan limit eases to 0:
 	// full below the first, 0 at the second. The furthest zoom fits the width with a margin, so it is past the second.
-	public const float PanEaseFromWidthShare = 0.6f;
+	public const float PanEaseFromWidthShare = 0.9f;
 
 	public const float PanEaseToWidthShare = 1f;
 
@@ -495,6 +522,45 @@ public static class RingCamera
 		}
 		float axisToCamera = Mathf.Sqrt(underRoot) - k * Mathf.Cos(edge);
 		return geometry.radius - axisToCamera;
+	}
+
+	// The widest screen shape (width over height) every ring size the Create World page offers fits on, fully zoomed out.
+	public const float WidestFittedAspect = 21f / 9f;
+
+	// The most tiles across, up to RingSize.MaxTilesAcross, at which a ring this many tiles around still fits its full
+	// width on a WidestFittedAspect screen: the camera can back off only as far as the ring's axis, so a ring that is
+	// wide for its radius can't fit at all.
+	public static int MaxTilesAcrossFitting(RingworldExtension settings, int tilesAround)
+	{
+		// The Advanced dialog asks every frame, so the last answer is kept.
+		if (settings == fittingSettings && tilesAround == fittingTilesAround)
+		{
+			return fittingTilesAcross;
+		}
+		fittingSettings = settings;
+		fittingTilesAround = tilesAround;
+		fittingTilesAcross = SearchMaxTilesAcrossFitting(settings, tilesAround);
+		return fittingTilesAcross;
+	}
+
+	private static RingworldExtension fittingSettings;
+
+	private static int fittingTilesAround;
+
+	private static int fittingTilesAcross;
+
+	private static int SearchMaxTilesAcrossFitting(RingworldExtension settings, int tilesAround)
+	{
+		for (int tilesAcross = RingSize.MaxTilesAcross; tilesAcross > RingSize.MinTilesAcross; tilesAcross--)
+		{
+			RingSize size = new RingSize(tilesAround, tilesAcross);
+			RingGeometry geometry = new RingGeometry(size, RingSize.FullLandCoverage, size.NewWorldShadowSquareCount);
+			if (WidthFitDistance(settings, geometry, WidestFittedAspect) < geometry.radius)
+			{
+				return tilesAcross;
+			}
+		}
+		return RingSize.MinTilesAcross;
 	}
 
 	private static void EnsureInitialized(RingLayer ring)

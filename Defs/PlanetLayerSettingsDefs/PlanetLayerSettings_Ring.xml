@@ -3,7 +3,7 @@
 
   <!--
     The ring ignores radius and subdivisions: its radius is derived from the world's ring size
-    (tiles around x vanilla hex size 0.8 / 2pi), and its tiles come from the ring geometry.
+    (tiles around x vanilla hex size 0.4958 / 2pi), and its tiles come from the ring geometry.
   -->
   <PlanetLayerSettingsDef>
     <defName>RW_Ring</defName>

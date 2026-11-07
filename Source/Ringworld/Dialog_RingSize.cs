@@ -49,6 +49,8 @@ public class Dialog_RingSize : Window
 		listing.Label("RW_RingSizeTilesAround".Translate(size.tilesAround));
 		int around = Mathf.RoundToInt(Widgets.HorizontalSlider(listing.GetRect(SliderHeight), size.tilesAround, RingSize.MinTilesAround, RingSize.MaxTilesAround, roundTo: 50f));
 		listing.Label("RW_RingSizeTilesAcross".Translate(size.tilesAcross));
+		// The slider keeps the full scale; ClampToLimits holds it at this ring's limit (RingSize.MaxTilesAcrossAt), so the
+		// handle stops there.
 		int across = Mathf.RoundToInt(Widgets.HorizontalSlider(listing.GetRect(SliderHeight), size.tilesAcross, RingSize.MinTilesAcross, RingSize.MaxTilesAcross, roundTo: 1f));
 		size = new RingSize(around, across).ClampToLimits();
 		WorldShape.RingSize = size;

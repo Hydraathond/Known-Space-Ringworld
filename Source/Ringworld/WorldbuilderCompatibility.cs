@@ -15,6 +15,8 @@ namespace Ringworld;
 // So on a ring, a preset that doesn't fit has its terrain (with the world info restored alongside it), settlements and
 // map markers skipped, with one warning, and the ring keeps its own. Planet worlds, and presets saved from a ring of
 // this shape, restore as Worldbuilder does. Its own Create World page gets the shape rows too (WorldbuilderPageRows).
+// Its surface world-object lookup (preset saves and restores, faction-wide settlement customisation) takes the layer of
+// vanilla's Surface def, so it finds the ring's objects through Patch_WorldGrid_SurfaceLookups with no patch here.
 // Without Worldbuilder none of this runs or logs.
 //   RW_DEV_WB_UNPATCHED=1  applies none of it, to see Worldbuilder's own behaviour on a ring world
 [StaticConstructorOnStartup]

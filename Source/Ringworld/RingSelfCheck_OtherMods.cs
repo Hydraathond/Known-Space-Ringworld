@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
 using RimWorld;
+using RimWorld.Planet;
 using Verse;
 
 namespace Ringworld;
@@ -80,6 +82,40 @@ public static partial class RingSelfCheck
 			if (patches == null || !patches.Prefixes.Any(patch => patch.owner == WorldbuilderCompatibility.HarmonyId))
 			{
 				result.Fail($"Worldbuilder's {name} has no Ringworld guard");
+			}
+		}
+	}
+
+	// With Worldbuilder, its surface world-object lookup (Utils.GetSurfaceWorldObjects<T>, behind preset saves and
+	// restores and faction-wide settlement customisation) finds the ring's objects: it takes the layer of vanilla's
+	// Surface def, which Patch_WorldGrid_SurfaceLookups makes the ring. Its filter keeps the objects of a faction other
+	// than the player's, and Worldbuilder's map markers. A ring with no other faction's settlements has nothing to show.
+	private static void CheckWorldbuilderSurfaceLookup(RingLayer ring, RingCheckResult result)
+	{
+		if (!WorldbuilderCompatibility.Active)
+		{
+			return;
+		}
+		MethodInfo lookup = AccessTools.Method(AccessTools.TypeByName("Worldbuilder.Utils"), "GetSurfaceWorldObjects");
+		Type marker = AccessTools.TypeByName("Worldbuilder.WorldObject_MapMarker");
+		if (lookup == null || marker == null)
+		{
+			result.Fail($"Worldbuilder's {(lookup == null ? "Utils.GetSurfaceWorldObjects" : "WorldObject_MapMarker")} not found");
+			return;
+		}
+		List<WorldObject> kept = Find.WorldObjects.AllWorldObjects.Where(worldObject => worldObject.Tile.Layer == ring && (worldObject.Faction?.def?.isPlayer == false || worldObject.def.defName == "WB_MapMarker")).ToList();
+		if (!kept.OfType<Settlement>().Any())
+		{
+			result.Skip("the ring has no settlements of other factions; Worldbuilder's lookup not checked");
+			return;
+		}
+		foreach (Type type in new[] { typeof(Settlement), marker })
+		{
+			HashSet<WorldObject> found = new HashSet<WorldObject>(((IEnumerable<object>)lookup.MakeGenericMethod(type).Invoke(null, null)).Cast<WorldObject>());
+			List<WorldObject> onRing = kept.Where(type.IsInstanceOfType).ToList();
+			if (found.Count != onRing.Count || !onRing.All(found.Contains))
+			{
+				result.Fail($"Worldbuilder's lookup of {type.Name} found {found.Count}, of which {onRing.Count(found.Contains)} of the ring's {onRing.Count}");
 			}
 		}
 	}

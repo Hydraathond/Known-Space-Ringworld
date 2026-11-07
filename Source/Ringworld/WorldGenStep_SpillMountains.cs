@@ -6,7 +6,7 @@ using Verse;
 namespace Ringworld;
 
 // Picks the wall-foot tiles that are spill mountains: about one every SpacingHexes along each rim, jittered by
-// JitterPercent, port and starboard drawn independently. A spot that falls on water (no wall foot there) is skipped,
+// JitterPercent, sinister and dexter drawn independently. A spot that falls on water (no wall foot there) is skipped,
 // not moved. Runs right after RW_WallFoot, with vanilla's world-seeded random for this step.
 // The tiles are saved with the ring (RingLayer.SpillMountainTiles), so this only runs on generation.
 public class WorldGenStep_SpillMountains : WorldGenStep

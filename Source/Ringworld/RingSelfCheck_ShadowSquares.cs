@@ -109,10 +109,12 @@ public static partial class RingSelfCheck
 		}
 	}
 
-	// The ring-view camera never sees a shadow square: it looks straight outward from at least
-	// ring radius - its maximum zoom distance from the axis, and every point closer to the axis than it is behind it.
-	// The squares are also clear of the sun's glow, inside every orbit layer's sphere, so the orbit-view camera never
-	// comes near them, and each one's shadow reaches across the ring from rim to rim.
+	// The ring view never shows a shadow square: it looks straight outward from at least ring radius - its furthest zoom
+	// from the axis, and every point closer to the axis than that is behind it. On small rings the furthest zoom backs
+	// the camera past the squares, and there the layer must not draw while the ring view is showing (seen only when
+	// the self-check runs in the ring view). The squares are also clear of the sun's glow, inside every orbit layer's
+	// sphere, so the orbit-view camera never comes near them, and each one's shadow reaches across the ring from rim
+	// to rim.
 	private static void CheckShadowSquaresPlacement(RingLayer ring, RingCheckResult result)
 	{
 		if (!TryGetShadowSquares(ring, result, out GlobalDrawLayer_RingShadowSquares squares))
@@ -140,9 +142,9 @@ public static partial class RingSelfCheck
 			}
 			shadowReach = Mathf.Min(shadowReach, Mathf.Min(highest, -lowest));
 		}
-		if (farthest >= cameraNearest)
+		if (farthest >= cameraNearest && RingCamera.ActiveRing != null && squares.Visible)
 		{
-			result.Fail($"a shadow square reaches {farthest:F1} from the axis; the ring-view camera can come to {cameraNearest:F1}");
+			result.Fail($"a shadow square reaches {farthest:F1} from the axis, past where the ring-view camera can come ({cameraNearest:F1}), and the squares draw in the ring view");
 		}
 		if (nearest <= glow)
 		{

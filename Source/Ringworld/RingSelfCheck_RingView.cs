@@ -12,10 +12,13 @@ public static partial class RingSelfCheck
 	// Fully zoomed out, the ring's full width must be at least this much smaller than the view's height.
 	private const float RingViewMinFitMargin = 1.05f;
 
-	// Ring sizes the furthest zoom is checked at: every tiles-across from the Create World page, at these tiles-around.
-	private static readonly int[] RingViewCheckedTilesAround = { RingSize.MinTilesAround, RingSize.Default.tilesAround, RingSize.MaxTilesAround };
+	// The spec's tiles around from which the Create World page offers the full 200 tiles across.
+	private const int SpecFullWidthTilesAround = 2000;
 
-	// Screen shapes (width over height) the furthest zoom is checked at, besides the game's own: 16:9 and 21:9.
+	// Ring sizes the furthest zoom is checked at: every tiles-across the Create World page offers, at these tiles-around.
+	private static readonly int[] RingViewCheckedTilesAround = { RingSize.MinTilesAround, SpecFullWidthTilesAround, RingSize.MaxTilesAround };
+
+	// Screen shapes (width over height) the furthest zoom is checked at, besides the game's own (capped at 21:9): 16:9 and 21:9.
 	private static readonly float[] RingViewCheckedAspects = { 16f / 9f, 21f / 9f };
 
 	// How far a ring angle may move going to the orbit view's facing and back.
@@ -32,17 +35,10 @@ public static partial class RingSelfCheck
 	private static void CheckRingViewFitsWidth(RingLayer ring, RingCheckResult result)
 	{
 		RingworldExtension settings = ring.Settings;
-		float tanHalfFov = Mathf.Tan(settings.cameraFieldOfView * 0.5f * Mathf.Deg2Rad);
 		ForEachCheckedRingView(ring, (size, geometry, aspect, farthest) =>
 		{
-			float hex = geometry.tileSize;
-			float wallTopRadius = size.Radius - 2f * hex;
-			float axisToCamera = size.Radius - farthest;
-			// Where the screen's edge ray, at angle edge from the view direction, meets the wall tops' cylinder.
-			float edge = Mathf.Atan(aspect * tanHalfFov);
-			float along = Mathf.Sqrt(wallTopRadius * wallTopRadius - axisToCamera * axisToCamera * Mathf.Sin(edge) * Mathf.Sin(edge)) - axisToCamera * Mathf.Cos(edge);
-			float halfHeight = along * Mathf.Cos(edge) * tanHalfFov;
-			float wallOuterY = geometry.HalfWidth + hex;
+			float halfHeight = ViewEdgeReachAtWallTops(settings, geometry, aspect, farthest);
+			float wallOuterY = WallOuterY(geometry);
 			if (!(halfHeight >= wallOuterY * RingViewMinFitMargin))
 			{
 				result.Fail($"at {size} on a {aspect:F2}:1 screen, fully zoomed out the view's edges reach {halfHeight:F1} from the midline at the rim walls' tops; they reach {wallOuterY:F1}");
@@ -55,13 +51,73 @@ public static partial class RingSelfCheck
 		});
 	}
 
-	// How far the beyond-rim share may stray from 30% of the view's height.
+	// How far from the midline the view's top and bottom edges reach at the rim walls' tops, at the screen's left and
+	// right edges, with the camera distance from the inner surface.
+	private static float ViewEdgeReachAtWallTops(RingworldExtension settings, RingGeometry geometry, float aspect, float distance)
+	{
+		float tanHalfFov = Mathf.Tan(settings.cameraFieldOfView * 0.5f * Mathf.Deg2Rad);
+		float wallTopRadius = geometry.radius - 2f * geometry.tileSize;
+		float axisToCamera = geometry.radius - distance;
+		// Where the screen's edge ray, at angle edge from the view direction, meets the wall tops' cylinder.
+		float edge = Mathf.Atan(aspect * tanHalfFov);
+		float along = Mathf.Sqrt(wallTopRadius * wallTopRadius - axisToCamera * axisToCamera * Mathf.Sin(edge) * Mathf.Sin(edge)) - axisToCamera * Mathf.Cos(edge);
+		return along * Mathf.Cos(edge) * tanHalfFov;
+	}
+
+	// The rim wall's outer side, a hex past the rim's hex tips, as far from the midline as the ring reaches.
+	private static float WallOuterY(RingGeometry geometry) => geometry.HalfWidth + geometry.tileSize;
+
+	// The spec's most tiles across the Create World page offers.
+	private const int SpecMaxTilesAcross = 200;
+
+	// The spec's widest screen shape every offered ring fits on, fully zoomed out.
+	private const float SpecWidestFittedAspect = 21f / 9f;
+
+	// The spec's margin the ring view fits the ring's full width with, fully zoomed out.
+	private const float SpecWidthFitMargin = 1.1f;
+
+	// At each checked tiles around, the Create World page's tiles-across limit is 200 from 2000 around up, and
+	// where it stops short of 200, one tile more wouldn't fit the ring's full width on a 21:9 screen even with the camera
+	// backed off to the axis. (That the offered sizes do fit is CheckRingViewFitsWidth's.)
+	private static void CheckTilesAcrossLimit(RingLayer ring, RingCheckResult result)
+	{
+		RingworldExtension settings = ring.Settings;
+		foreach (int tilesAround in RingViewCheckedTilesAround)
+		{
+			int limit = RingSize.MaxTilesAcrossAt(tilesAround);
+			if (tilesAround >= SpecFullWidthTilesAround && limit != SpecMaxTilesAcross)
+			{
+				result.Fail($"at {tilesAround} tiles around the page offers up to {limit} tiles across; the spec's {SpecMaxTilesAcross}");
+			}
+			if (limit < RingSize.MinTilesAcross || limit > SpecMaxTilesAcross)
+			{
+				result.Fail($"at {tilesAround} tiles around the page offers up to {limit} tiles across, outside {RingSize.MinTilesAcross}-{SpecMaxTilesAcross}");
+				continue;
+			}
+			if (limit == SpecMaxTilesAcross)
+			{
+				continue;
+			}
+			RingSize wider = new RingSize(tilesAround, limit + 1);
+			RingGeometry geometry = new RingGeometry(wider, RingSize.FullLandCoverage, wider.NewWorldShadowSquareCount);
+			float halfHeight = ViewEdgeReachAtWallTops(settings, geometry, SpecWidestFittedAspect, geometry.radius);
+			if (halfHeight >= WallOuterY(geometry) * SpecWidthFitMargin)
+			{
+				result.Fail($"at {tilesAround} tiles around the page stops at {limit} tiles across, but {wider} still fits on a 21:9 screen with the camera on the axis ({halfHeight:F1} reached, {WallOuterY(geometry):F1} wide)");
+			}
+		}
+	}
+
+	// How far the beyond-rim share may stray from 40% of the view's height.
 	private const float PanShareTolerance = 0.005f;
 
 	// The spec's share of the view's height that the area beyond a rim may take, written out rather than read from the camera.
-	private const float SpecBeyondRimShare = 0.3f;
+	private const float SpecBeyondRimShare = 0.4f;
 
-	// At every ring size and several zooms, panned as far as it goes the area beyond the rim takes 30% of the view's
+	// The spec's share of the ring's full width the view must reach before the pan limit starts to ease off.
+	private const float SpecPanEaseFromWidthShare = 0.9f;
+
+	// At every ring size and several zooms, panned as far as it goes the area beyond the rim takes 40% of the view's
 	// height (or the limit is 0 because the width already fits); fully zoomed out the limit is 0; and jumping to a
 	// wall-foot tile (the rim row, at either rim) leaves that tile inside the view, at the zoom the ring view starts at
 	// and at the nearest zoom.
@@ -87,7 +143,7 @@ public static partial class RingSelfCheck
 				else if (limit > 0f)
 				{
 					float beyond = (limit + viewHeight * 0.5f - rimLine) / viewHeight;
-					bool eased = viewHeight > 0.6f * 2f * wallSide;
+					bool eased = viewHeight > SpecPanEaseFromWidthShare * 2f * wallSide;
 					if (beyond > SpecBeyondRimShare + PanShareTolerance || (!eased && beyond < SpecBeyondRimShare - PanShareTolerance))
 					{
 						result.Fail($"at {size}, {distance:F1} from the surface, panned to the limit ({limit:F1}) the area beyond the rim takes {beyond:P1} of the view's height, not {SpecBeyondRimShare:P0}");
@@ -125,11 +181,30 @@ public static partial class RingSelfCheck
 		});
 	}
 
-	// The spec's ground band end and the step between atmosphere bands on the default settings (40, then 40 / 60 / 90 / 135),
-	// written out rather than worked from the camera's formula.
-	private const float SpecGroundFurthest = 40f;
+	// The nearest zoom never clips the ground or the region labels floating above it, and the world camera has the ring
+	// view's near clip while the ring view drives it.
+	private static void CheckRingViewNearClip(RingLayer ring, RingCheckResult result)
+	{
+		RingworldExtension settings = ring.Settings;
+		float nearClip = RingCamera.NearClipPlane(settings);
+		float closest = settings.cameraMinDistance - RegionLabels.Lift;
+		if (nearClip <= 0f || nearClip >= closest)
+		{
+			result.Fail($"the near clip is {nearClip:F2}; it must be above 0 and below the nearest zoom {settings.cameraMinDistance:F2} less the labels' lift {RegionLabels.Lift:F2}");
+		}
+		Camera camera = Find.WorldCamera;
+		if (camera != null && WorldRendererUtility.WorldSelected && RingCamera.ActiveRing != null && RingCamera.Distance >= 0f && !Mathf.Approximately(camera.nearClipPlane, nearClip))
+		{
+			result.Fail($"in the ring view the world camera's near clip is {camera.nearClipPlane:F2}, not {nearClip:F2}");
+		}
+	}
 
-	private static readonly float[] SpecDefaultBands = { 40f, 60f, 90f, 135f };
+	// The spec's ground band end and the step between atmosphere bands on the default settings (24.8, then 24.8 / 37.2 / 55.8 / 83.7:
+	// v0.1.2 ticket 14's 40 / 60 / 90 / 135 scaled to vanilla-sized hexes), written out rather than worked from the
+	// camera's formula.
+	private const float SpecGroundFurthest = 24.8f;
+
+	private static readonly float[] SpecDefaultBands = { 24.8f, 37.2f, 55.8f, 83.7f };
 
 	// How far the default settings' band edges may stray from the spec's rounded figures.
 	private const float SpecBandTolerance = 0.03f;
@@ -138,7 +213,7 @@ public static partial class RingSelfCheck
 	// nearest zoom and end at F, which is G x the def's furthestZoomRatio or, where that would pass the axis, squeezed
 	// onto it with the atmosphere bands still spanning equal factors. The ring view's stack follows the chain from the
 	// surface ring, one band per layer. On the default settings, on a ring wide enough not to squeeze, three atmosphere
-	// layers give the spec's 40 / 60 / 90 / 135.
+	// layers give the spec's 24.8 / 37.2 / 55.8 / 83.7.
 	private static void CheckRingViewZoomBands(RingLayer ring, RingCheckResult result)
 	{
 		RingworldExtension settings = ring.Settings;
@@ -207,7 +282,7 @@ public static partial class RingSelfCheck
 			{
 				if (Mathf.Abs(wideBands[i + 1] - SpecDefaultBands[i]) > SpecBandTolerance * SpecDefaultBands[i])
 				{
-					result.Fail($"at {wide}, with three atmosphere layers, band {i} ends at {wideBands[i + 1]:F1}, not about {SpecDefaultBands[i]:F0}");
+					result.Fail($"at {wide}, with three atmosphere layers, band {i} ends at {wideBands[i + 1]:F1}, not about {SpecDefaultBands[i]:F1}");
 				}
 			}
 		}
@@ -232,10 +307,14 @@ public static partial class RingSelfCheck
 	// Calls visit with each checked ring size and screen shape, and the ring view's furthest zoom there.
 	private static void ForEachCheckedRingView(RingLayer ring, System.Action<RingSize, RingGeometry, float, float> visit)
 	{
-		List<float> aspects = new List<float>(RingViewCheckedAspects) { RingCamera.ScreenAspect };
+		// The game's own screen shape, clamped to 21:9: the Create World page promises every offered ring fits its full width
+		// only up to 21:9, so a wider screen is checked as 21:9 by every check here. Narrower screens are checked at their own
+		// shape.
+		float liveAspect = Mathf.Min(RingCamera.ScreenAspect, SpecWidestFittedAspect);
+		List<float> aspects = new List<float>(RingViewCheckedAspects) { liveAspect };
 		foreach (int tilesAround in RingViewCheckedTilesAround)
 		{
-			for (int tilesAcross = RingSize.MinTilesAcross; tilesAcross <= RingSize.MaxTilesAcross; tilesAcross++)
+			for (int tilesAcross = RingSize.MinTilesAcross; tilesAcross <= RingSize.MaxTilesAcrossAt(tilesAround); tilesAcross++)
 			{
 				RingSize size = new RingSize(tilesAround, tilesAcross);
 				RingGeometry geometry = new RingGeometry(size, RingSize.FullLandCoverage, size.NewWorldShadowSquareCount);

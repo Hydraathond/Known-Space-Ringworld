@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
@@ -15,8 +17,7 @@ public static partial class RingSelfCheck
 	// Steps per day when measuring vanilla's night on the midline.
 	private const int NightLengthSteps = 2400;
 
-	// Hours the night shadow's width may differ from vanilla's night on the midline: the measuring step, and the midline
-	// row being a little off the midline when the ring has an even number of rows.
+	// Hours the night shadow's width may differ from vanilla's night on the midline: the measuring step.
 	private const float NightLengthToleranceHours = 0.25f;
 
 	private const int MaxListedMaterials = 10;
@@ -101,11 +102,17 @@ public static partial class RingSelfCheck
 	}
 
 	// At each sampled moment the night shadow is as wide as vanilla's night on the midline that day: measured over the
-	// next day at a midline tile from vanilla's sun glow, as its colony map would have it.
+	// next day from vanilla's sun glow (the formula GenCelestial.CelestialSunGlow reads for a tile) at the midline's latitude, with the
+	// local time of the first live column's midline-row tile, as a colony map on the midline there would have it. No row
+	// lies on the midline when the ring has an even number of rows, so its latitude is the middle of the two middle rows'.
 	private static void CheckNightShadowWidth(RingLayer ring, RingCheckResult result)
 	{
+		Func<float, int, float, float> celestialSunGlowPercent = AccessTools.MethodDelegate<Func<float, int, float, float>>(AccessTools.Method(typeof(GenCelestial), "CelestialSunGlowPercent"));
 		RingGeometry geometry = ring.Geometry;
-		PlanetTile tile = new PlanetTile(geometry.TileId(geometry.tilesAcross / 2, geometry.firstColumn), ring);
+		Vector2 upperMidline = ring.LongLatOf(geometry.TileId(geometry.tilesAcross / 2, geometry.firstColumn));
+		Vector2 lowerMidline = ring.LongLatOf(geometry.TileId((geometry.tilesAcross - 1) / 2, geometry.firstColumn));
+		float longitude = upperMidline.x;
+		float latitude = 0.5f * (upperMidline.y + lowerMidline.y);
 		float zone = 2f * Mathf.PI / geometry.nightZones;
 		for (int sample = 0; sample < NightZoneSamples; sample++)
 		{
@@ -113,7 +120,9 @@ public static partial class RingSelfCheck
 			int nightSteps = 0;
 			for (int step = 0; step < NightLengthSteps; step++)
 			{
-				if (!GenCelestial.IsDaytime(GenCelestial.CelestialSunGlow(tile, ticks + step * GenDate.TicksPerDay / NightLengthSteps)))
+				int stepTicks = ticks + step * GenDate.TicksPerDay / NightLengthSteps;
+				float glow = celestialSunGlowPercent(latitude, GenDate.DayOfYear(stepTicks, longitude), GenDate.DayPercent(stepTicks, longitude));
+				if (!GenCelestial.IsDaytime(glow))
 				{
 					nightSteps++;
 				}

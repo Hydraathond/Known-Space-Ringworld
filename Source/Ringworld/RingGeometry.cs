@@ -220,14 +220,13 @@ public sealed class RingGeometry
 		return Mathf.Repeat(angle * nightZones + 180f, 360f) - 180f;
 	}
 
-	// Kilometres between the centres of neighbouring hexes, for ring coordinates only. Ringworld's own convention: vanilla
-	// has no size for a tile.
-	public const double KmPerHex = 25.0;
+	// Parallels from the midline to each rim line, whatever the ring's size: ring coordinates' unit across.
+	public const double ParallelsToRimLine = 144.0;
 
 	// The tile's ring coordinates, from its row and column (never from LongLatOf, which is climate and local time).
 	// Around: the tile centre's angle from column 0 (the live arc's centre), positive spinward, in -180..180. Column 0
 	// sits at angle 0 round the axis on every ring geometry, so the origin is the surface ring's on any ring-shaped layer. Across:
-	// distance of its row from the midline, negative towards port (row 0).
+	// distance of its row from the midline in parallels (the rim line is 144), negative towards sinister (row 0).
 	public RingCoordinates CoordinatesOf(int tileId)
 	{
 		int row = RowOf(tileId);
@@ -237,8 +236,8 @@ public sealed class RingGeometry
 		{
 			degrees -= 360.0;
 		}
-		double km = (row - (tilesAcross - 1) * 0.5) * 1.5 / System.Math.Sqrt(3.0) * KmPerHex;
-		return new RingCoordinates(degrees, km);
+		double parallels = (row - (tilesAcross - 1) * 0.5) * rowSpacing / RimLine * ParallelsToRimLine;
+		return new RingCoordinates(degrees, parallels);
 	}
 
 	// Every tile of the rim rows, along the live arc.

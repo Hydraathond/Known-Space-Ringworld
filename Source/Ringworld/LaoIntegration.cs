@@ -14,12 +14,13 @@ namespace Ringworld;
 // applies when LAO is loaded. Planet worlds are left to LAO. On a ring world the integration is active (ActiveOn)
 // whenever LAO is loaded and the integration checked out at startup: the world has Odyssey's orbit (LAO's Orbit) and
 // the layers ticked in LAO's own layer list that a ring supports (ADR 0006), chained by LAO's elevations. Ticked layers
-// are added when the world is created or loaded, and unticked ones are never removed. Ringworld only reads LAO's list,
-// never writes it. Where the orbit layers sit comes from RingOrbitExtension, which the same XML patch adds to their
+// are added when the world is created or loaded, and unticked ones are never removed. Ringworld only reads LAO's list
+// (the dev harness's @quicktest replaces it in memory, never on disk). Where the orbit layers sit comes from RingOrbitExtension, which the same XML patch adds to their
 // layer defs; a ring world made without LAO has its single orbit moved there when it's loaded with LAO (RingOrbit).
 // LAO's atmosphere layers are built as rings on a ring world (ADR 0005, RingAtmosphere), at the heights the same XML
 // patch gives their defs (RingAtmosphereExtension). LAO's Luna assumes a sphere and is left out. Where LAO's code
-// assumes a sphere, LaoCounterPatches corrects it on ring worlds.
+// assumes a sphere, LaoCounterPatches corrects it on ring worlds. LaoLayerTabText gives LAO's Layer tab the ring's own
+// texts on ring worlds; it's only text, so if it fails it logs its own warning and the orbit stack is left alone.
 // If any part of the integration fails, one warning is logged and ring worlds keep the single orbit; if it's the ring's
 // own extension that's missing, the exceptions LAO then throws while finishing a ring map are dropped too, so a ring
 // world always loads. Without LAO none of this runs or logs.
@@ -33,7 +34,7 @@ public static class LaoIntegration
 
 	private const string ModTypeName = "LayeredAtmosphereOrbit.LAOMod";
 
-	private const string SurfaceGroup = "LAO_Surface";
+	internal const string SurfaceGroup = "LAO_Surface";
 
 	private const string Namespace = "LayeredAtmosphereOrbit";
 
@@ -52,7 +53,8 @@ public static class LaoIntegration
 	// Orbit.
 	private static readonly string[] RingOptionalLayerNames = AtmosphereLayerNames.Append(HighOrbitName).ToArray();
 
-	// LAO's layer list in its settings: the layer defNames it adds to every game. Only ever read.
+	// LAO's layer list in its settings: the layer defNames it adds to every game. Only read, but for the dev harness's
+	// in-memory override (OverrideLayerListInMemory).
 	private const string LayerListField = "AutoAddLayersDefNames";
 
 	private static FieldInfo elevationField;
@@ -88,6 +90,12 @@ public static class LaoIntegration
 		if (problem != null)
 		{
 			Log.Warning($"[Ringworld] Layered Atmosphere and Orbit integration failed ({problem}); ring worlds keep a single orbit.");
+		}
+		// Only text, so a failure here leaves the orbit stack alone.
+		string tabTextProblem = Guarded(() => LaoLayerTabText.Apply(harmony));
+		if (tabTextProblem != null)
+		{
+			Log.Warning($"[Ringworld] Layered Atmosphere and Orbit's Layer tab not patched ({tabTextProblem}); it describes ring worlds with LAO's planet texts.");
 		}
 		if (!ringExtensionArrived)
 		{
@@ -209,6 +217,17 @@ public static class LaoIntegration
 	public static bool IsRingOptionalLayer(PlanetLayerDef def)
 	{
 		return RingOptionalLayerNames.Contains(def.defName);
+	}
+
+	// Dev harness only (@quicktest): replaces LAO's layer list in memory with these defNames, or with every layer LAO's
+	// settings offer when null, and returns the list now in place. LAO's settings file isn't written, and players' games
+	// never call this.
+	internal static List<string> OverrideLayerListInMemory(IEnumerable<string> defNames)
+	{
+		Type mod = AccessTools.TypeByName(ModTypeName);
+		List<string> layers = (defNames ?? ((IEnumerable<PlanetLayerDef>)AccessTools.Field(mod, "AutoAddLayerOptions").GetValue(null)).Select(def => def.defName)).ToList();
+		Traverse.Create((settingsProperty ?? AccessTools.Property(mod, "Settings")).GetValue(null)).Field(LayerListField).SetValue(layers);
+		return layers;
 	}
 
 	// Those of RingOptionalLayers ticked in LAO's layer list now.

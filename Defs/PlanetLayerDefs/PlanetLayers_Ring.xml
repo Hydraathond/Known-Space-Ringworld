@@ -64,14 +64,14 @@
     </worldTabs>
     <modExtensions>
       <li Class="Ringworld.RingworldExtension">
-        <!-- The ring size is per-world state saved with the world; the radius follows from it (tiles around x 0.8 / 2pi). -->
+        <!-- The ring size is per-world state saved with the world; the radius follows from it (tiles around x 0.4958 / 2pi). -->
         <!-- Set to true if the ring is invisible or can't be clicked: it reverses which side of the tiles faces the camera. -->
         <flipWinding>false</flipWinding>
-        <!-- Camera distances from the inner surface, in world units (one hex is about 0.8). The ring is about 14 wide. -->
+        <!-- Camera distances from the inner surface, in world units (one hex is about 0.5, as on a vanilla planet). The ring is about 9 wide. -->
         <cameraFieldOfView>50</cameraFieldOfView>
-        <cameraMinDistance>3</cameraMinDistance>
-        <cameraStartDistance>15</cameraStartDistance>
-        <cameraMaxDistance>40</cameraMaxDistance>
+        <cameraMinDistance>1.86</cameraMinDistance>
+        <cameraStartDistance>9.3</cameraStartDistance>
+        <cameraMaxDistance>24.8</cameraMaxDistance>
         <!-- The furthest zoom, past which the orbit view opens, is this times the ground's furthest. The atmosphere layers (LAO) share the range between them. -->
         <furthestZoomRatio>3.4</furthestZoomRatio>
       </li>

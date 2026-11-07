@@ -99,11 +99,11 @@ public class WorldDrawLayer_RingThickness : WorldDrawLayer, IRingNativeDrawLayer
 		{
 			yield return item;
 		}
-		if (planetLayer is RingLayer { Geometry: RingGeometry geometry })
+		if (planetLayer is RingLayer { Geometry: RingGeometry geometry } && !RingDrawLayerBuild.Run(this, () => Build(geometry)))
 		{
-			Build(geometry);
-			FinalizeMesh(MeshParts.All);
+			yield break;
 		}
+		FinalizeMesh(MeshParts.All);
 	}
 
 	// One GetSubMesh call per segment of each strip: GetSubMesh starts a new submesh only once one holds 40000 verts, so

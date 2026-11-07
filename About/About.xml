@@ -2,8 +2,8 @@
 <ModMetaData>
   <name>Ringworld</name>
   <author>Hydradog</author>
-  <packageId>hydradog.ringworld</packageId>
-  <modVersion>0.1.2</modVersion>
+  <packageId>hydradog.ksringworld</packageId>
+  <modVersion>0.1.4</modVersion>
   <url>https://github.com/Hydraathond/Known-Space-Ringworld</url>
   <description>A ringworld as described in the books by Larry Niven
 

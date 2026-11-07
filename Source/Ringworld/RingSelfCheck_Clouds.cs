@@ -86,7 +86,7 @@ public static partial class RingSelfCheck
 		{
 			result.Fail($"the cloud band draws with {RingMaterials.ShaderDefName(material)}, not {WorldDrawLayer_RingClouds.ShaderName}");
 		}
-		// By name: ContentFinder finds nothing off the main thread, where the check after loading a save runs.
+		// By name: ContentFinder finds nothing off the main thread, so names hold wherever the texture was loaded.
 		foreach ((int id, string name, string path) in new[]
 		{
 			(ShaderPropertyIDs.NoiseTex, "noise", "Other/Perlin"),

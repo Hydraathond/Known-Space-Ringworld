@@ -49,9 +49,9 @@ public class WorldDrawLayer_RingStandIn : WorldDrawLayer, IRingNativeDrawLayer
 		{
 			yield return item;
 		}
-		if (planetLayer is RingLayer { Geometry: RingGeometry geometry } && !geometry.IsFullLoop)
+		if (planetLayer is RingLayer { Geometry: RingGeometry geometry } && !geometry.IsFullLoop && !RingDrawLayerBuild.Run(this, () => Build(geometry)))
 		{
-			Build(geometry);
+			yield break;
 		}
 		// Even with nothing to build, so a regenerate at 100% leaves no mesh behind.
 		FinalizeMesh(MeshParts.All);

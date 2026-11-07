@@ -9,7 +9,8 @@ using Verse;
 namespace Ringworld;
 
 // Checks invariants of the actual ring world and logs one PASS/FAIL line per check, with offending tile IDs.
-// Runs after world generation, after loading a save, and from the "Ringworld: self-check" debug action.
+// Runs in dev mode after world generation and after loading a save (Patch_World_FinalizeInit), from the
+// "Ringworld: self-check" debug action, and from the dev harness. Only ever on the main thread: the checks build draw layers.
 // Planet worlds (no ring layer) are skipped silently.
 //
 // To add a check: write a method with the RingCheck signature (in its own partial file if it has a theme)
@@ -36,8 +37,9 @@ public static partial class RingSelfCheck
 		("Wall foot: wall-foot tiles are exactly the land tiles at the rims", true, CheckWallFootOnlyOnRims),
 		("Spill mountains: every spill mountain is a wall-foot tile on the live arc", false, CheckSpillMountainsOnWallFoot),
 		($"Spill mountains: on each rim, spill mountains not parted by water are {SpillMountainMinGap}-{SpillMountainMaxGap} hexes apart, and on a world placed with that rule no longer stretch of wall foot goes without one", true, CheckSpillMountainSpacing),
-		("Spill mountains: each shows one icon, vanilla's ordinary mountain icon rather than the wall foot's impassable one", true, CheckSpillMountainIcons),
+		("Spill mountains: each shows one icon, an ordinary mountain icon rather than the wall foot's impassable one, in vanilla's hills layer or, when ReGrowth 2's World Beautification draws the hill icons, in ReGrowth's layer; skipped when another mod draws them", true, CheckSpillMountainIcons),
 		("Coordinates: sample tiles format to known ring coordinates, at 0 and 180 degrees, spinward and anti-spinward, on the midline and on both rim rows", false, CheckCoordinateSamples),
+		("Coordinate parallels: both rim rows read between 140 and 144 on a wide ring and inside 144 on any, values mirror about the midline, and the dexter rim row is positive and the one the live headings call North", false, CheckCoordinateParallels),
 		("Climate: averaged per row, temperature is highest at the midline and never rises toward a rim", true, CheckClimateFallsTowardRims),
 		($"Climate: rim rows are as warm as vanilla at {RingGeometry.RimVanillaLatitudeRange.min}-{RingGeometry.RimVanillaLatitudeRange.max} degrees latitude", true, CheckRimClimate),
 		("Rivers and roads: every river and road step joins neighbouring tiles, so none goes through a cut", false, CheckRiverAndRoadStepsJoinNeighbours),
@@ -45,13 +47,13 @@ public static partial class RingSelfCheck
 		("Rivers: no river step goes from one wall-foot tile to another", true, CheckRiversNeverWallFootToWallFoot),
 		("Rivers: a wall-foot tile has at most one river link, so it can only be a river's source", true, CheckWallFootHasOneRiverLink),
 		("Rivers: every river network drains to water", false, CheckRiversReachWater),
-		("Headings: the neighbours of sample tiles, beside the seam on a full loop too, head West to spinward, East to anti-spinward, North to starboard and South to port", true, CheckHeadingsMatchRingView),
+		("Headings: the neighbours of sample tiles, beside the seam on a full loop too, head West to spinward, East to anti-spinward, North to dexter and South to sinister", true, CheckHeadingsMatchRingView),
 		("Headings: on the ring every heading is 360 degrees minus vanilla's, and on every other layer it's vanilla's", false, CheckHeadingsMirroredOnlyOnRing),
 		("Drawn quads: an arrow drawn as vanilla's world arrows at a neighbour of sample tiles sits just above the inner surface over the neighbour, faces the axis and points at the tile, and no tile of any other layer is near enough the ring surface to be drawn there", true, CheckDrawnQuadsOnInnerSurface),
 		("Regions: every tile in a region has the region's name to show in the tile info", false, CheckRegionsNamed),
 		("Regions: every region's label is anchored on the inner surface between the rims", true, CheckRegionLabelsOnSurface),
 		("Thickness: the outer face is about 1 hex below the inner surface, and a rim-wall face at each rim rises about 2 hexes toward the axis", true, CheckThickness),
-		("Structure: the thickness and the shadow squares draw with the ring structure shader, each face with a texture from its own surface's folder", true, CheckStructureMaterials),
+		("Structure: the thickness and the shadow squares draw with the ring structure shader, each face with a texture from its surface's folder", true, CheckStructureMaterials),
 		("Structure: every surface whose folder has edge codes loaded one complete Wang set of 16, and on every face of the thickness and the shadow squares the tiles of neighbouring squares (also across the loop's wrap) have matching codes on their shared edge", true, CheckStructureWang),
 		("Structure: on the outer face and rim-wall faces the texture repeats about every 4 hexes round the loop and across, whatever the ring size, showing at least 3 variants of each surface; the shadow squares' faces too", true, CheckStructureScale),
 		("Surface additions: every world-gen step and draw layer on vanilla's Surface def, other mods' included, is on the ring's def and its draw layers are built on the ring, except vanilla's sphere-only draw layers, which the ring never has", false, CheckSurfaceAdditions),
@@ -60,6 +62,7 @@ public static partial class RingSelfCheck
 		("Surface identity: with Vanilla Expanded Framework, its object-spawn and moving-base Surface checks call IsSurface instead of reading vanilla's Surface def; without it, nothing carries Ringworld's VEF patches", false, CheckVefSurfaceChecks),
 		("Other mods: with My Little Planet, its planet size slider is drawn only with a planet's coverage row, never under the ring rows, whatever the load order", false, CheckMyLittlePlanetSlider),
 		("Other mods: with Worldbuilder, its preset terrain, settlement and map-marker restores carry Ringworld's preset-fit guard; without it, nothing carries Ringworld's Worldbuilder patch", false, CheckWorldbuilderPresetGuard),
+		("Other mods: with Worldbuilder, its surface world-object lookup (preset saves and restores, faction-wide settlement customisation) finds exactly the ring's settlements of other factions and its map markers", false, CheckWorldbuilderSurfaceLookup),
 		("Other mods: with Worldbuilder, its page's centre column has the shape rows before Scale, which they skip with Ring, and above Coverage, its Coverage slider and world preview go through Ringworld's ring stand-ins, and its background preview generation stops on a ring", false, CheckWorldbuilderPageRows),
 		("Layers: with Layered Atmosphere and Orbit, the ring has only itself, Odyssey's orbit and LAO's optional layers a ring supports (its atmosphere layers and High Orbit), including every one ticked in LAO's layer list while the integration is active, while the integration works, chained ring first and then by LAO's elevation, zooming out and back zooming in", false, CheckLaoLayers),
 		("Atmosphere layers: every other ring-shaped layer is one of LAO's atmosphere layers, at its fixed fraction of the rim wall's height above the inner surface (troposphere 0.25, stratosphere 0.5, mesosphere 0.75), with the ring's tiles across, hexes the ring's size, no hex reaching outside the live arc, the local time of the ground under it, gravship flights between layers on vanilla's timing, and never the surface: not the root surface, IsSurface false, and the surface lookups still find the ring", true, CheckAtmosphereLayers),
@@ -68,12 +71,17 @@ public static partial class RingSelfCheck
 		("Orbit: Odyssey's orbit is centred on the sun, without LAO there is at most one sun-centred orbit layer, and without LAO's integration every sun-centred orbit layer without an orbit band is at about half the ring radius, and Odyssey's orbit layers keep vanilla's subdivisions", false, CheckOrbitLayer),
 		("Orbit: below 100% land coverage, no tile of any orbit layer lies outside the live arc's angular span, and no tile lies outside a layer's orbit band; at 100% each orbit layer without an orbit band is a full sphere", false, CheckOrbitSpansLiveArc),
 		("Quest sites: a site that can't be in space, searched for from tiles of every orbit layer, is only ever found on the ring, at least once per layer, without errors", false, CheckSitesFromOrbitOnRing),
+		("Layer tab: with LAO, its Layer tab carries the text swap, which on a ring world gives its Surface group and the group's planet the ring's own texts (the planet's followed by LAO's paragraphs after its first, its gravity-well line) and puts LAO's own back after; without LAO, the tab isn't patched", false, CheckLaoLayerTabText),
 		("Orbit view: from every orbit layer, fully zoomed out, the whole ring is in view and inside the far clip", true, CheckOrbitViewFitsRing),
+		("Ghost icons: from every layer selected in turn, the ghost icons are exactly the iconed world objects of the surface ring and LAO's atmosphere layers from a sun-centred orbit layer, of the surface ring from an atmosphere layer, and none from any other layer; each on its object's own layer at its draw position, and each object hidden from vanilla's hover, click and drag-box picking in that view; with the ghost-icon setting off, none from any layer", false, CheckGhostIcons),
+		($"Orbit icons: on a ring world, a world object's icon on every sun-centred orbit layer is {OrbitIcons.SizeFactor:F1} x vanilla's size and on the ring and its atmosphere layers vanilla's, both centred where vanilla centres them", false, CheckOrbitIconSize),
 		("Orbit map: on every orbit layer, the world background camera is inside the ring", true, CheckOrbitMapBackgroundInsideRing),
 		("Ring view: at every ring size, fully zoomed out, the full width and both rim walls fit on screen out to its left and right edges, and narrow rings keep the def's furthest zoom", false, CheckRingViewFitsWidth),
-		("Ring view: panning across stops where the area beyond a rim takes at most 30% of the view's height (exactly 30% when zoomed in), is 0 when fully zoomed out, and a jump-to a wall-foot tile leaves it on screen", false, CheckRingViewPanAcross),
+		("Create World page: at the minimum, default and maximum tiles around, the tiles-across limit is 200 from the default up, and stops short of 200 only where one tile more wouldn't fit the ring's full width fully zoomed out on a 21:9 screen", false, CheckTilesAcrossLimit),
+		("Ring view: panning across stops where the area beyond a rim takes at most 40% of the view's height (exactly 40% when zoomed in), is 0 when fully zoomed out, and a jump-to a wall-foot tile leaves it on screen", false, CheckRingViewPanAcross),
 		("Ring view: at every ring size, the furthest zoom never backs the camera past the axis", false, CheckRingViewInsideRing),
 		("Ring view: the zoom bands of the surface ring and its atmosphere layers are contiguous and in chain order, split the range from the ground's furthest zoom to the stack's evenly, and end on the axis at most", false, CheckRingViewZoomBands),
+		("Ring view: its near clip is below the nearest zoom by more than the region labels' lift, and the camera uses it while the ring view shows", false, CheckRingViewNearClip),
 		("Ring view: a ring angle turned into the orbit view's facing looks at that spot's inner surface from across the sun, and comes back as the same angle", false, CheckRingOrbitFacingRoundTrip),
 		("Sun: the sun glows at the ring's centre, inside every orbit layer's sphere, in place of vanilla's sun", false, CheckSun),
 		("Lighting: the world shaders get no sun direction, so vanilla's night side never darkens the ring", false, CheckEvenLighting),
@@ -84,7 +92,7 @@ public static partial class RingSelfCheck
 		("Night zones: tiles half a night zone apart are 12 hours apart in local time", true, CheckNightZonesOpposite),
 		("Night zones: before play, the night shadow and shadow squares show 6 am local time at the selected starting tile", true, CheckStartTimeBeforePlay),
 		("Shadow squares: one shadow square per night zone, each over the middle of its own night zone on the midline", true, CheckShadowSquaresOverNightZones),
-		("Shadow squares: closer to the axis than the ring-view camera can be, clear of the sun, inside every orbit layer's sphere, and shadowing the ring from rim to rim", true, CheckShadowSquaresPlacement),
+		("Shadow squares: behind the ring-view camera, or not drawn while the ring view shows where it can pass them, clear of the sun, inside every orbit layer's sphere, and shadowing the ring from rim to rim", true, CheckShadowSquaresPlacement),
 		("Night shadow: at each sampled moment, one night shadow per night zone, each centred on local midnight on the midline", true, CheckNightShadowCentredOnMidnight),
 		("Night shadow: at each sampled moment, each night shadow lies under its own shadow square", true, CheckNightShadowUnderSquares),
 		("Night shadow: at each sampled moment, each night shadow is as wide as vanilla's night on the midline that day", true, CheckNightShadowWidth),
@@ -103,6 +111,12 @@ public static partial class RingSelfCheck
 	// another ring-shaped layer (an atmosphere layer). reason says what triggered it, for the log.
 	public static void Run(World world, string reason)
 	{
+		// Off the main thread the draw layers' materials can't be made, and a failed build would show as FAILs.
+		if (!UnityData.IsInMainThread)
+		{
+			Log.Error($"[Ringworld] Self-check ({reason}) called off the main thread; skipped. Run it from the main thread, e.g. through LongEventHandler.ExecuteWhenFinished.");
+			return;
+		}
 		if (SurfaceRing.Of(world?.grid) is { } ring)
 		{
 			RunOn(ring, reason);
@@ -142,7 +156,13 @@ public static partial class RingSelfCheck
 			{
 				result.Fail("threw " + e);
 			}
-			if (result.Passed)
+			if (result.Passed && result.SkippedBecause != null)
+			{
+				// Counted as skipped, like a check left out for want of geometry.
+				run--;
+				Log.Warning("[Ringworld]   SKIP " + name + ": " + result.SkippedBecause);
+			}
+			else if (result.Passed)
 			{
 				passed++;
 				Log.Message("[Ringworld]   PASS " + name);
@@ -239,6 +259,15 @@ public sealed class RingCheckResult
 	private readonly List<string> reasons = new List<string>();
 
 	public bool Passed => tiles.Count == 0 && reasons.Count == 0;
+
+	// Why the check couldn't look at what it checks (another mod drew it, say), or null. A check skipped without a
+	// failure is logged as SKIP with the reason, neither passed nor failed.
+	public string SkippedBecause { get; private set; }
+
+	public void Skip(string reason)
+	{
+		SkippedBecause = reason;
+	}
 
 	// Each tile is listed once, in the order it was reported.
 	public void FailTile(int tileId)

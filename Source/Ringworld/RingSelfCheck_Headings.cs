@@ -16,8 +16,8 @@ public static partial class RingSelfCheck
 	private const float HeadingTolerance = 0.01f;
 
 	// Every neighbour of some sample tiles: the middle of the live arc (and, on a full loop, beside the seam), on both
-	// rim rows, the midline and the row starboard of it (so both an even and an odd, shifted row). Same-row neighbours are West to spinward and East to anti-spinward, the
-	// starboard row's are North and the port row's South.
+	// rim rows, the midline and the row dexter of it (so both an even and an odd, shifted row). Same-row neighbours are West to spinward and East to anti-spinward, the
+	// dexter row's are North and the sinister row's South.
 	private static void CheckHeadingsMatchRingView(RingLayer ring, RingCheckResult result)
 	{
 		RingGeometry geometry = ring.Geometry;
@@ -72,7 +72,7 @@ public static partial class RingSelfCheck
 		}
 	}
 
-	// ADR 0004's table: rows go from port (row 0) to starboard.
+	// ADR 0004's table: rows go from sinister (row 0) to dexter.
 	private static Rot4 ExpectedRot(int row, int neighborRow, bool spinward)
 	{
 		if (neighborRow != row)

@@ -4,20 +4,20 @@ using Verse;
 namespace Ringworld;
 
 // A ring tile's position as shown to the player (see RingGeometry.CoordinatesOf): degrees spinward (S) or
-// anti-spinward (A) from 0°, and whole kilometres from the midline towards port (P) or starboard (Sb), or M on it.
+// anti-spinward (A) from 0°, and parallels (144 from the midline to each rim line) towards sinister (Sn) or dexter (Dx), or ∥0 on the midline.
 // Display only: nothing reads it back.
 public readonly struct RingCoordinates
 {
 	// Signed: positive spinward, in -180..180.
 	public readonly double degreesAround;
 
-	// Signed: positive towards starboard.
-	public readonly double kmAcross;
+	// Signed: positive towards dexter.
+	public readonly double parallelsAcross;
 
-	public RingCoordinates(double degreesAround, double kmAcross)
+	public RingCoordinates(double degreesAround, double parallelsAcross)
 	{
 		this.degreesAround = degreesAround;
-		this.kmAcross = kmAcross;
+		this.parallelsAcross = parallelsAcross;
 	}
 
 	// Rounded as shown, so the letter goes by the shown value: anything that rounds to 0.00° or 180.00° has none.
@@ -27,21 +27,23 @@ public readonly struct RingCoordinates
 
 	private bool NoAroundDirection => DegreesRounded == 0.0 || DegreesRounded == 180.0;
 
-	// Only a row exactly on the midline (odd tiles across) is M; rows half a row off it show their 11 km.
-	private bool OnMidline => Math.Abs(kmAcross) < 1E-06;
+	// Rounded as shown, so anything that rounds to 0.00 is on the midline, as for degrees.
+	private double ParallelsRounded => Math.Round(Math.Abs(parallelsAcross), 2, MidpointRounding.AwayFromZero);
 
-	private string KmShown => Math.Round(Math.Abs(kmAcross), MidpointRounding.AwayFromZero).ToString("F0");
+	private bool OnMidline => ParallelsRounded == 0.0;
 
-	// e.g. "134.23°S, 43Sb", for the world inspect pane.
+	private string ParallelsShown => ParallelsRounded.ToString("F2");
+
+	// e.g. "134.23°S, 43.10∥Dx", for the world inspect pane.
 	public string ToShortString()
 	{
-		return Format(AroundKey("RW_RingAround_Spinward", "RW_RingAround_AntiSpinward", "RW_RingAround_NoDirection"), AcrossKey("RW_RingAcross_Starboard", "RW_RingAcross_Port", "RW_RingAcross_Midline"));
+		return Format(AroundKey("RW_RingAround_Spinward", "RW_RingAround_AntiSpinward", "RW_RingAround_NoDirection"), AcrossKey("RW_RingAcross_Dexter", "RW_RingAcross_Sinister", "RW_RingAcross_Midline"));
 	}
 
-	// e.g. "134.23° spinward, 43 km starboard", for messages.
+	// e.g. "134.23° spinward, 43.10 parallels dexter", for messages.
 	public string ToSpelledOutString()
 	{
-		return Format(AroundKey("RW_RingAround_Spinward_SpelledOut", "RW_RingAround_AntiSpinward_SpelledOut", "RW_RingAround_NoDirection_SpelledOut"), AcrossKey("RW_RingAcross_Starboard_SpelledOut", "RW_RingAcross_Port_SpelledOut", "RW_RingAcross_Midline_SpelledOut"));
+		return Format(AroundKey("RW_RingAround_Spinward_SpelledOut", "RW_RingAround_AntiSpinward_SpelledOut", "RW_RingAround_NoDirection_SpelledOut"), AcrossKey("RW_RingAcross_Dexter_SpelledOut", "RW_RingAcross_Sinister_SpelledOut", "RW_RingAcross_Midline_SpelledOut"));
 	}
 
 	private string AroundKey(string spinward, string antiSpinward, string noDirection)
@@ -49,13 +51,13 @@ public readonly struct RingCoordinates
 		return NoAroundDirection ? noDirection : degreesAround > 0.0 ? spinward : antiSpinward;
 	}
 
-	private string AcrossKey(string starboard, string port, string midline)
+	private string AcrossKey(string dexter, string sinister, string midline)
 	{
-		return OnMidline ? midline : kmAcross > 0.0 ? starboard : port;
+		return OnMidline ? midline : parallelsAcross > 0.0 ? dexter : sinister;
 	}
 
 	private string Format(string aroundKey, string acrossKey)
 	{
-		return "RW_RingCoordinates".Translate(aroundKey.Translate(DegreesShown), acrossKey.Translate(KmShown)).Resolve();
+		return "RW_RingCoordinates".Translate(aroundKey.Translate(DegreesShown), acrossKey.Translate(ParallelsShown, "RW_RingParallelSymbol".Translate())).Resolve();
 	}
 }

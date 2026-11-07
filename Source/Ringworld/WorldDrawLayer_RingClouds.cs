@@ -51,8 +51,7 @@ public class WorldDrawLayer_RingClouds : WorldDrawLayer, IRingNativeDrawLayer
 
 	internal static readonly int DensityScaleID = Shader.PropertyToID("_DensityScale");
 
-	// Vanilla's cloud textures, loaded on the main thread at startup: the layer can be built off it (the self-check after
-	// loading a save), where ContentFinder finds nothing.
+	// Vanilla's cloud textures, loaded on the main thread at startup, as ContentFinder finds nothing off it.
 	private static readonly Texture2D NoiseTexture = ContentFinder<Texture2D>.Get("Other/Perlin");
 
 	private static readonly Texture2D SunsetColorRamp = ContentFinder<Texture2D>.Get("World/SunsetGradient");
@@ -137,20 +136,24 @@ public class WorldDrawLayer_RingClouds : WorldDrawLayer, IRingNativeDrawLayer
 		{
 			yield return item;
 		}
-		if (planetLayer is RingLayer { Geometry: RingGeometry geometry })
+		if (planetLayer is RingLayer { Geometry: RingGeometry geometry } && !RingDrawLayerBuild.Run(this, () => BuildWithMaterial(geometry)))
 		{
-			if (material == null)
-			{
-				material = NewMaterial();
-			}
-			material.SetFloat(RingRadiusID, geometry.radius);
-			material.SetFloat(Repeats1ID, PrimaryRepeats(geometry.radius));
-			material.SetFloat(Repeats2ID, SecondaryRepeats(geometry.radius));
-			ApplyHaze(geometry);
-			ApplyDensity(CurrentDensity);
-			Build(geometry);
+			yield break;
 		}
 		FinalizeMesh(MeshParts.All);
+	}
+
+	// The material is made on the first build. It copies vanilla's deferred clouds material, which can only be made on the
+	// main thread; a failed attempt throws before the field is set, so the next build tries again.
+	private void BuildWithMaterial(RingGeometry geometry)
+	{
+		material ??= NewMaterial();
+		material.SetFloat(RingRadiusID, geometry.radius);
+		material.SetFloat(Repeats1ID, PrimaryRepeats(geometry.radius));
+		material.SetFloat(Repeats2ID, SecondaryRepeats(geometry.radius));
+		ApplyHaze(geometry);
+		ApplyDensity(CurrentDensity);
+		Build(geometry);
 	}
 
 	// Vanilla's rule (WorldDrawLayer_Clouds.GetTargetOpacity): no clouds in the ring view, so they never hide the ground

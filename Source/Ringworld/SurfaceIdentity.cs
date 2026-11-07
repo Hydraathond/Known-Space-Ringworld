@@ -22,6 +22,9 @@ public static class SurfaceIdentity
 	// The surface ring's def, RW_Ring.
 	public static PlanetLayerDef RingDef => ringDef ??= DefDatabase<PlanetLayerDef>.GetNamed("RW_Ring");
 
+	// RingDef, or null before defs are loaded (the mod's constructor reads the last ring size).
+	public static PlanetLayerDef RingDefIfLoaded => ringDef ??= DefDatabase<PlanetLayerDef>.GetNamedSilentFail("RW_Ring");
+
 	// RW_Ring is the surface ring's def only: another ring-shaped layer (an atmosphere layer) has a def of its own, so
 	// this stays false for it.
 	public static bool IsSurface(PlanetLayerDef def)

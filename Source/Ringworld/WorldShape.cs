@@ -11,9 +11,9 @@ public static class WorldShape
 {
 	public static readonly RingSizePreset[] Presets =
 	{
-		new RingSizePreset("RW_RingSizePreset_Small", "RW_RingSizePresetShort_Small", RingSize.Default),
-		new RingSizePreset("RW_RingSizePreset_Medium", "RW_RingSizePresetShort_Medium", new RingSize(4000, 30)),
-		new RingSizePreset("RW_RingSizePreset_Large", "RW_RingSizePresetShort_Large", new RingSize(8000, 40)),
+		new RingSizePreset("RW_RingSizePreset_Small", "RW_RingSizePresetShort_Small", new RingSize(2000, 30)),
+		new RingSizePreset("RW_RingSizePreset_Medium", "RW_RingSizePresetShort_Medium", RingSize.Default),
+		new RingSizePreset("RW_RingSizePreset_Large", "RW_RingSizePresetShort_Large", new RingSize(8000, 50)),
 		new RingSizePreset("RW_RingSizePreset_LoreAccurate", "RW_RingSizePresetShort_LoreAccurate", new RingSize(18000, 30)),
 	};
 

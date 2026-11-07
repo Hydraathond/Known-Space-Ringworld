@@ -57,9 +57,9 @@ public static partial class RingSelfCheck
 		{
 			Vector3 center = ring.GetTileCenter(id);
 			ring.GetTileNeighbors(id, neighbors);
-			bool towardsStarboard = neighbors.Any(neighbor => ring.GetTileCenter(neighbor).y > center.y + otherRowOffset);
-			bool towardsPort = neighbors.Any(neighbor => ring.GetTileCenter(neighbor).y < center.y - otherRowOffset);
-			bool atRim = !towardsStarboard || !towardsPort;
+			bool towardsDexter = neighbors.Any(neighbor => ring.GetTileCenter(neighbor).y > center.y + otherRowOffset);
+			bool towardsSinister = neighbors.Any(neighbor => ring.GetTileCenter(neighbor).y < center.y - otherRowOffset);
+			bool atRim = !towardsDexter || !towardsSinister;
 			bool land = ring[id] is SurfaceTile tile && !tile.WaterCovered;
 			if (wallFootTiles.Contains(id) != (atRim && land))
 			{

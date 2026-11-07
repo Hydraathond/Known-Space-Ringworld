@@ -17,8 +17,8 @@ public static partial class RingSelfCheck
 	// The spec's 3-4 variants per texture: at least this many differ round the loop, if the folder has them.
 	private const int StructureMinVariantsShown = 3;
 
-	// Every thickness and shadow-square face draws with the ring structure shader, each with one of its own surface's
-	// textures from that surface's folder, and every surface has a texture.
+	// Every thickness and shadow-square face draws with the ring structure shader, each with a texture from its surface's
+	// folder, and every surface has a texture.
 	private static void CheckStructureMaterials(RingLayer ring, RingCheckResult result)
 	{
 		if (!RingMaterials.RingShaderLoaded(RingStructure.ShaderName))
@@ -29,7 +29,7 @@ public static partial class RingSelfCheck
 		{
 			if (RingStructure.TexturesOf(surface).Count == 0)
 			{
-				result.Fail($"there are no {surface} textures in Textures/{RingStructure.TextureFolder}{surface}");
+				result.Fail($"there are no {surface} textures in Textures/{RingStructure.FolderPathOf(surface)}");
 			}
 		}
 		foreach ((string layer, _, LayerSubMesh subMesh) in StructureSubMeshes(ring, result))
@@ -45,11 +45,11 @@ public static partial class RingSelfCheck
 				result.Fail($"the {layer} draws with {material.name}, which isn't a ring structure material");
 				return;
 			}
-			// By name: ContentFinder finds nothing off the main thread, where the check after loading a save runs.
+			// By name: ContentFinder finds nothing off the main thread, so names hold wherever the texture was loaded.
 			string texture = material.GetTexture(RingStructure.MainTexID)?.name;
 			if (!RingStructure.TexturesOf(surface).Any(known => known.name == texture))
 			{
-				result.Fail($"the {layer}'s {surface} faces draw with texture {texture ?? "none"}, not one from Textures/{RingStructure.TextureFolder}{surface}");
+				result.Fail($"the {layer}'s {surface} faces draw with texture {texture ?? "none"}, not one from Textures/{RingStructure.FolderPathOf(surface)}");
 				return;
 			}
 		}
@@ -69,7 +69,7 @@ public static partial class RingSelfCheck
 		{
 			if (RingStructure.WangProblemOf(surface) is string problem)
 			{
-				result.Fail($"the {surface} folder has edge codes but isn't one complete Wang set: {problem}");
+				result.Fail($"the {surface} surface's folder {RingStructure.FolderOf(surface)} has edge codes but isn't one complete Wang set: {problem}");
 			}
 			else if (RingStructure.IsWang(surface) && RingStructure.TexturesOf(surface).Count != 16)
 			{

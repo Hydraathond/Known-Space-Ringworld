@@ -23,7 +23,7 @@ public static partial class RingSelfCheck
 	// Hex neighbours aren't exactly along the tangent frame's axes, so arrows may point a little off.
 	private const float ArrowPointingToleranceDegrees = 5f;
 
-	// Each sample tile's neighbours (rim rows, the midline and the shifted row starboard of it, mid-arc and beside the
+	// Each sample tile's neighbours (rim rows, the midline and the shifted row dexter of it, mid-arc and beside the
 	// seam), as GenDraw draws an arrow at a neighbour pointing at the tile: rotation heading - 90, heading read through
 	// the tile overload. The quad must sit ArrowAltOffset nearer the axis than the inner surface, at the neighbour's angle
 	// and height, face the axis, and point (its local +Z, the texture's up, as on a planet) from the neighbour towards

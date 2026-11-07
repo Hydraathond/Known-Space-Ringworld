@@ -37,6 +37,7 @@ public class RingworldMod : Mod
 		Listing_Standard listing = new Listing_Standard();
 		listing.Begin(inRect);
 		listing.CheckboxLabeled("RW_SettingSpillMountains".Translate(), ref WorldShape.settings.spillMountains, "RW_SettingSpillMountainsTip".Translate());
+		listing.CheckboxLabeled("RW_SettingGhostIcons".Translate(), ref WorldShape.settings.ghostIcons, "RW_SettingGhostIconsTip".Translate());
 		listing.Gap();
 		listing.Label("RW_SettingCloudDensity".Translate((WorldShape.settings.cloudDensity * 100f).ToString("F0")), tooltip: "RW_SettingCloudDensityTip".Translate());
 		WorldShape.settings.cloudDensity = Mathf.Round(listing.Slider(WorldShape.settings.cloudDensity, 0f, 2f) * 100f) / 100f;
