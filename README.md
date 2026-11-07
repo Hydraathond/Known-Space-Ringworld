@@ -10,6 +10,10 @@ circling a sun, with rim walls on both edges and shadow squares that bring night
 
 ## Installing
 
+Subscribe to it on the Steam Workshop: https://steamcommunity.com/sharedfiles/filedetails/?id=3835317516
+
+*or*
+
 1. Download `Ringworld-<version>.zip` from the [latest release](https://github.com/Hydraathond/Known-Space-Ringworld/releases/latest).
 2. Unzip it into your RimWorld `Mods` folder, so you get `Mods/Ringworld/About/About.xml`.
 3. Turn on Harmony and Ringworld in the mod list, with Harmony first.
