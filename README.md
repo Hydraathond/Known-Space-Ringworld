@@ -10,10 +10,6 @@ circling a sun, with rim walls on both edges and shadow squares that bring night
 
 ## Installing
 
-Subscribe to it on the Steam Workshop: https://steamcommunity.com/sharedfiles/filedetails/?id=3835317516
-
-*or*
-
 1. Download `Ringworld-<version>.zip` from the [latest release](https://github.com/Hydraathond/Known-Space-Ringworld/releases/latest).
 2. Unzip it into your RimWorld `Mods` folder, so you get `Mods/Ringworld/About/About.xml`.
 3. Turn on Harmony and Ringworld in the mod list, with Harmony first.
@@ -48,5 +44,10 @@ Any artwork and textures were made by a human.
 [CC BY-NC-SA 4.0](LICENSE): you may share and adapt this mod, including patches and forks, as long as you give credit,
 don't use it commercially, and share your changes under the same license. Please don't re-upload it to the Steam
 Workshop as-is.
+
+Streamers and video creators are welcome. For the purposes of Section 8(c) of the License, streamers and video
+creators (for example on Twitch and YouTube) are expressly permitted to publicly perform and display this mod for
+commercial advantage or monetary compensation, such as monetised streams and videos, provided all other terms of the
+License are met. This permission ends if the License is terminated under Section 6(a).
 
 *Ringworld* and *Known Space* are the work of Larry Niven. This is an unofficial fan mod.
